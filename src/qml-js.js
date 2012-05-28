@@ -4,19 +4,33 @@ Written by Daniël Heres 2012
 
 
 */
-
+function val(v, id, prop) {
+  if (typeof(v)==="string") {
+    if (!graph[id].updates) graph[id].updates = {}
+    graph[id].updates[prop] = new Function("return " + v);
+    return graph[id].updates[prop]();
+  }
+  return v;
+}
+var graph = {};
+var global_id = 0;
 var qml_convert = {
   item: function(i, t) {
     var div = document.createElement(t || "div");
     div.style.position="absolute";
     i.map(function(e) {
-      if(e.id) div.id=e.id;
-      if(e.width) div.style.width=e.width;
-      if(e.height) div.style.height=e.height;
-      if(e.x) div.style.left=e.x + "px";
-      if(e.y) div.style.top=e.y + "px";
-      if(e.z) div.style.zIndex = e.z;
-      if(e.opacity) div.style.opacity=e.opacity;
+      if(e.id) {
+        div.id=e.id;
+      }
+      else e.id = global_id++ + "qmljs";
+      graph[e.id] = {}
+      graph[e.id].id = e.id;
+      if(e.width) div.style.width=val(e.width, e.id, "width");
+      if(e.height) div.style.height=val(e.height, e.id, "height");
+      if(e.x) div.style.left=val(e.x, e.id, "x") + "px";
+      if(e.y) div.style.top=val(e.y, e.id, "y") + "px";
+      if(e.z) div.style.zIndex = val(e.z, e.id, "z");
+      if(e.opacity) div.style.opacity=val(e.opacity, e.id, "opacity");
       if(e.visible==="false") div.style.visibility="hidden";
       if(e.focus==="true") div.autofocus="true";
       if(e.clip==="false")div.style.overflow="visible";

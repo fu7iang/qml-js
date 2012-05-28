@@ -42,7 +42,10 @@ var "var" =
 alphanumeric "alphanumeric" =
   v:[a-zA-Z0-9]+ {return v.join("")}
 
-sign = s:("-"/"+")
+sign = 
+  "+" { return ""}
+ /"-"
+ / ""
 
 integer "integer" =
   s:sign spaces digits:[0-9]+ { return s + parseInt(digits.join(""), 10); }
@@ -53,9 +56,30 @@ floating "float" =
 string "string" =
   '"' v:('\\"' / [^"\""])+ '"' {return '"' + v.join("") + '"'}
 
+additive "additive" =
+  left:multiplicative spaces "+" spaces right:additive { return left + "+" + right; }
+ /left:multiplicative spaces "-" spaces right:additive { return left + "-" + right; }
+ /multiplicative
+
+multiplicative "multiplicative" =
+  left:primary spaces "*" spaces right:multiplicative { return left +  "*" + right; }
+ /left:primary spaces "/" spaces right:multiplicative { return left +  "/" + right; }
+ /primary
+
+primary
+  = floating
+  / integer
+  / "(" additive:additive ")" { return "(" + additive + ")"; }
+  / v:var {return "graph." + v}
+
+
+expression "expression" =
+  "{" spaces a:additive spaces "}" {return '"' + a + '"'}
+
 val "val" =
  floating
  /integer
  /string
- /v:var {return '"' + v + '"'} 
+ /v:var {return '"' + v + '"'}
+ /e:expression
 
