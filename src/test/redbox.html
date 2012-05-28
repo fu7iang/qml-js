@@ -20,11 +20,17 @@
     border.color:white
     border.size:3
     radius:25;
+    opacity:0.5
+    z:1
     Text {
       text:"hi";
       x:12;
       y:12;
+      z:-1
+      color: blue
       bold: true;
+      underline:true
+      strikeout:true
     }
   }
   Rectangle {
@@ -33,6 +39,19 @@
     color:orange;
     x:90;
     y:0;
+    rotate:60
+    scale:2
+    
+  }
+  Rectangle {
+    width:40;
+    height : 40;
+    color:orange;
+    x:300;
+    y:0;
+    rotate:60
+    scale:2
+    visible:false
   }
   Image {
     x:30;

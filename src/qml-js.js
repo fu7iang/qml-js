@@ -13,8 +13,28 @@ var qml_convert = {
       if(e.id) div.id=e.id;
       if(e.width) div.style.width=e.width;
       if(e.height) div.style.height=e.height;
-      if(e.x) div.style.marginLeft=e.x + "px";
-      if(e.y) div.style.marginTop=e.y + "px";
+      if(e.x) div.style.left=e.x + "px";
+      if(e.y) div.style.top=e.y + "px";
+      if(e.z) div.style.zIndex = e.z;
+      if(e.opacity) div.style.opacity=e.opacity;
+      if(e.visible==="false") div.style.visibility="hidden";
+      if(e.focus==="true") div.autofocus="true";
+      if(e.clip==="false")div.style.overflow="visible";
+      if(e.clip==="true")div.style.overflow="hidden";
+      if(e.rotate) {
+        var rot = "rotate(" + e.rotate + "deg)";
+        div.style.webkitTransform=rot;
+        div.style.MozTransform=rot;
+        div.style.oTransform=rot;
+        div.style.transform=rot;
+      }
+      if(e.scale) {
+        var scale = "scale(" + e.scale + ")";
+        div.style.webkitTransform+=scale;
+        div.style.MozTransform+=scale;
+        div.style.oTransform+=scale;
+        div.style.transform+=scale;
+      }
     });
     var p = convert_to_page(i, div);
     return div;   
@@ -59,6 +79,12 @@ var qml_convert = {
     t.map(function(e) {
       if(e.text) text.innerHTML = e.text;
       if(e.bold ==="true") text.style.fontWeight="bold";
+      if(e.color) text.style.color=e.color;
+      if(e.italic==="true") text.style.fontStyle+="italic";
+      if(e.underline==="true") text.style.textDecoration+=" underline";
+      if(e.strikeout==="true") text.style.textDecoration+=" line-through";
+      if(e.pixelSize) text.style.fontSize+=e.pixelSize + "px";
+      if(e.pointSize) text.style.fontSize+=e.pointSize + "pt";
     });
     return text;
   }

@@ -47,6 +47,7 @@ qmlparser = (function(){
         "spaces": parse_spaces,
         "var": parse_var,
         "alphanumeric": parse_alphanumeric,
+        "sign": parse_sign,
         "integer": parse_integer,
         "floating": parse_floating,
         "string": parse_string,
@@ -676,71 +677,69 @@ qmlparser = (function(){
         return result0;
       }
       
-      function parse_integer() {
-        var result0, result1;
-        var pos0;
+      function parse_sign() {
+        var result0;
         
-        reportFailures++;
-        pos0 = pos;
-        if (/^[0-9]/.test(input.charAt(pos))) {
-          result1 = input.charAt(pos);
+        if (input.charCodeAt(pos) === 45) {
+          result0 = "-";
           pos++;
         } else {
-          result1 = null;
-          if (reportFailures === 0) {
-            matchFailed("[0-9]");
-          }
-        }
-        if (result1 !== null) {
-          result0 = [];
-          while (result1 !== null) {
-            result0.push(result1);
-            if (/^[0-9]/.test(input.charAt(pos))) {
-              result1 = input.charAt(pos);
-              pos++;
-            } else {
-              result1 = null;
-              if (reportFailures === 0) {
-                matchFailed("[0-9]");
-              }
-            }
-          }
-        } else {
           result0 = null;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset, digits) { return parseInt(digits.join(""), 10); })(pos0, result0);
+          if (reportFailures === 0) {
+            matchFailed("\"-\"");
+          }
         }
         if (result0 === null) {
-          pos = pos0;
-        }
-        reportFailures--;
-        if (reportFailures === 0 && result0 === null) {
-          matchFailed("integer");
+          if (input.charCodeAt(pos) === 43) {
+            result0 = "+";
+            pos++;
+          } else {
+            result0 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"+\"");
+            }
+          }
         }
         return result0;
       }
       
-      function parse_floating() {
-        var result0, result1, result2;
+      function parse_integer() {
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         reportFailures++;
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_integer();
+        result0 = parse_sign();
         if (result0 !== null) {
-          if (input.charCodeAt(pos) === 46) {
-            result1 = ".";
-            pos++;
-          } else {
-            result1 = null;
-            if (reportFailures === 0) {
-              matchFailed("\".\"");
-            }
-          }
+          result1 = parse_spaces();
           if (result1 !== null) {
-            result2 = parse_integer();
+            if (/^[0-9]/.test(input.charAt(pos))) {
+              result3 = input.charAt(pos);
+              pos++;
+            } else {
+              result3 = null;
+              if (reportFailures === 0) {
+                matchFailed("[0-9]");
+              }
+            }
+            if (result3 !== null) {
+              result2 = [];
+              while (result3 !== null) {
+                result2.push(result3);
+                if (/^[0-9]/.test(input.charAt(pos))) {
+                  result3 = input.charAt(pos);
+                  pos++;
+                } else {
+                  result3 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("[0-9]");
+                  }
+                }
+              }
+            } else {
+              result2 = null;
+            }
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
@@ -756,7 +755,73 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, f) {return parseFloat(f.join(""));})(pos0, result0);
+          result0 = (function(offset, s, digits) { return s + parseInt(digits.join(""), 10); })(pos0, result0[0], result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        reportFailures--;
+        if (reportFailures === 0 && result0 === null) {
+          matchFailed("integer");
+        }
+        return result0;
+      }
+      
+      function parse_floating() {
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2;
+        
+        reportFailures++;
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_sign();
+        if (result0 !== null) {
+          result1 = parse_spaces();
+          if (result1 !== null) {
+            pos2 = pos;
+            result2 = parse_integer();
+            if (result2 !== null) {
+              if (input.charCodeAt(pos) === 46) {
+                result3 = ".";
+                pos++;
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\".\"");
+                }
+              }
+              if (result3 !== null) {
+                result4 = parse_integer();
+                if (result4 !== null) {
+                  result2 = [result2, result3, result4];
+                } else {
+                  result2 = null;
+                  pos = pos2;
+                }
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, s, f) {return s + parseFloat(f.join(""));})(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -879,14 +944,7 @@ qmlparser = (function(){
         if (result0 === null) {
           result0 = parse_integer();
           if (result0 === null) {
-            pos0 = pos;
             result0 = parse_string();
-            if (result0 !== null) {
-              result0 = (function(offset, s) {return s})(pos0, result0);
-            }
-            if (result0 === null) {
-              pos = pos0;
-            }
             if (result0 === null) {
               pos0 = pos;
               result0 = parse_var();
