@@ -1,11 +1,11 @@
 qml-js
 ======
 
-QML to HTML/JavaScript converter
+QML to HTML/JavaScript compiler
 
-This is a proof of concept now. 
+This is a proof of concept now. It compiles QML first to JSON and then to HTML.
 
-You can draw to things now:
+You can draw a few simple things now:
 ```
 Rectangle {
   width:400;
