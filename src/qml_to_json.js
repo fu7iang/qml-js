@@ -36,7 +36,7 @@ spaces "spaces" =
   " "* {return ""}
 
 var "var" =
-  v:alphanumeric  p:(x:("." alphanumeric) {return x.join("")})* {console.log(p); return v + p.join("")}
+  v:alphanumeric  p:(x:("." alphanumeric) {return x.join("")})* {return v + p.join("")}
 
 alphanumeric "alphanumeric" =
   v:[a-zA-Z0-9]+ {return v.join("")}
