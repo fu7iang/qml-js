@@ -92,13 +92,71 @@ var qml_convert = {
     var text = qml_convert.item(t);
     t.map(function(e) {
       if(e.text) text.innerHTML = e.text;
-      if(e.bold ==="true") text.style.fontWeight="bold";
+
       if(e.color) text.style.color=e.color;
-      if(e.italic==="true") text.style.fontStyle+="italic";
-      if(e.underline==="true") text.style.textDecoration+=" underline";
-      if(e.strikeout==="true") text.style.textDecoration+=" line-through";
-      if(e.pixelSize) text.style.fontSize+=e.pixelSize + "px";
-      if(e.pointSize) text.style.fontSize+=e.pointSize + "pt";
+
+      if(e["font.bold"] ==="true") text.style.fontWeight="bold";
+      if(e["font.italic"]) text.style.fontStyle="italic";
+      if(e["font.pixelSize"]) text.style.fontSize+=e["font.pixelSize"] + "px";
+      if(e["font.pointSize"]) text.style.fontSize+=e["font.pointSize"] + "pt";
+      if(e["font.family"]) text.style.fontFamily = e["font.family"];
+      if(e["font.underline"]==="true") text.style.textDecoration+=" underline";
+      if(e["font.strikeout"]==="true") text.style.textDecoration+=" line-through";
+      if(e["font.letterspacing"]) text.style.letterSpacing = e["font.letterspacing"] + "px";
+      if(e["font.wordspacing"]) text.style.wordSpacing = e["font.wordspacing"] + "px";
+      switch(e['font.capitalization']) {
+        case "Font.AllUppercase":
+          text.style.textTransform = "uppercase";
+          break;
+        case "Font.AllLowercase":
+          text.style.textTransform = "lowercase";
+          break;
+        case "Font.SmallCaps":
+          text.style.fontVariant = "small-caps"
+          break;
+        case "Font.Capitalize":
+          text.style.textTransform = "capitalize"; 
+          break;  
+      }
+      switch(e['font.weight']) {
+          case "Font.Light":
+            text.style.fontWeight = "lighter";
+            break;
+          case "Font.DemiBold":
+            text.style.fontWeight = "bolder";
+            break;
+          case "Font.Bold":
+            text.style.fontWeight = "bold";
+            break;
+          case "Font.Black":
+            text.style.fontWeight = "900";
+            break;
+      }
+      switch(e['horizontalAlignment']) {
+          case "Text.AlignLeft":
+            text.style.textAlign = "left";
+            break;
+          case "Text.AlignRight":
+            text.style.textAlign = "right";
+            break;
+          case "Text.AlignHCenter":
+            text.style.textAlign = "center";
+            break;
+          case "Text.AlignJustify":
+            text.style.textAlign = "justify";
+            break;
+      }
+      switch(e['verticalAlignment']) {
+          case "Text.Text.AlignTop":
+            text.style.verticalAlign = "text-top";
+            break;
+          case "Text.Text.AlignBottom":
+            text.style.textAlign = "text-bottom";
+            break;
+          case "Text.AlignVCenter":
+            text.style.textAlign = "middle";
+            break;
+      }
     });
     return text;
   }

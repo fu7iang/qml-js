@@ -12,7 +12,7 @@
   border.size:5
   radius:20;
   Rectangle {
-    width:40;
+    width:120;
     height : 40;
     color:orange;
     x:40;
@@ -23,14 +23,22 @@
     opacity:{1-0.4/(2/1)}
     z:1
     Text {
-      text:"hi";
+      text:"hi you";
       x:12;
       y:12;
       z:-1
       color: blue
-      bold: true;
-      underline:true
-      strikeout:true
+      font.underline:true
+      font.strikeout:true
+      font.pixelSize:10
+      font.family:"Arial"
+      font.italic:true
+      font.capitalization: Font.Capitalize
+      font.letterspacing:2
+      font.weight:Font.Black
+      font.wordspacing: 20
+      width:105
+      horizontalAlignment:Text.AlignRight
     }
   }
   Rectangle {
