@@ -1,3 +1,4 @@
+
 /*
  * QML to JSON parser in PEG.js
  * Written by Daniël Heres 2012
@@ -5,13 +6,13 @@
  */
 
 start =
-  c:code {return "{" + c + "}"}
+  c:code {return "[" + c + "]"}
 
 code "code" = 
   ident
     v:var ident "{" m:mix "}"
   ident 
-  {return '"' + v + '":{' + m + "}"}
+  {return '{"' + v + '":[' + m + "]}"}
 
 mix "mix" =
   ident 
@@ -24,7 +25,7 @@ declarations "declarations" =
   / d:declaration break? {return d}
 
 declaration "declaration" =
-  l:var spaces ":" spaces r:val {return '"' + l + '"' + ":" + r}
+  l:var spaces ":" spaces r:val {return '{"' + l + '"' + ":" + r + "}"}
 
 break "break" =
   (";" / "\n") { return ""}

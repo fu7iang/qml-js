@@ -113,7 +113,7 @@ qmlparser = (function(){
         pos0 = pos;
         result0 = parse_code();
         if (result0 !== null) {
-          result0 = (function(offset, c) {return "{" + c + "}"})(pos0, result0);
+          result0 = (function(offset, c) {return "[" + c + "]"})(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -188,7 +188,7 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v, m) {return '"' + v + '":{' + m + "}"})(pos0, result0[1], result0[4]);
+          result0 = (function(offset, v, m) {return '{"' + v + '":[' + m + "]}"})(pos0, result0[1], result0[4]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -360,7 +360,7 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, l, r) {return '"' + l + '"' + ":" + r})(pos0, result0[0], result0[4]);
+          result0 = (function(offset, l, r) {return '{"' + l + '"' + ":" + r + "}"})(pos0, result0[0], result0[4]);
         }
         if (result0 === null) {
           pos = pos0;
