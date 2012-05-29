@@ -9,16 +9,16 @@ start =
   c:code {return "[" + c + "]"}
 
 code "code" = 
-  comments
+  comments ident
     v:var ident "{" m:mix "}"
-  ident 
+  ident comments 
   {return '{"' + v + '":[' + m + "]}"}
 
 mix "mix" =
   ident 
     x:(declarations
     /code)* 
-  comments {return x.join(",")}
+  ident {return x.join(",")}
 
 declarations "declarations" =
   x: (declaration break ident) {return x.join("")} 
@@ -46,8 +46,10 @@ sign =
   "+" { return ""}
  /"-"
  / ""
+
 comments "comments" = 
    (ident one_line_comment ident / ident multi_line_comment ident)* 
+
 one_line_comment "one line comment" =
   "//" [^"\n"]* "\n"   {return ""}
 
