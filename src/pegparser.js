@@ -130,43 +130,61 @@ qmlparser = (function(){
       }
       
       function parse_code() {
-        var result0, result1, result2, result3, result4, result5, result6;
+        var result0, result1, result2, result3, result4, result5, result6, result7, result8, result9;
         var pos0, pos1;
         
         reportFailures++;
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_comments();
+        result0 = parse_ident();
         if (result0 !== null) {
-          result1 = parse_var();
+          result1 = parse_comments();
           if (result1 !== null) {
             result2 = parse_ident();
             if (result2 !== null) {
-              if (input.charCodeAt(pos) === 123) {
-                result3 = "{";
-                pos++;
-              } else {
-                result3 = null;
-                if (reportFailures === 0) {
-                  matchFailed("\"{\"");
-                }
-              }
+              result3 = parse_var();
               if (result3 !== null) {
-                result4 = parse_mix();
+                result4 = parse_ident();
                 if (result4 !== null) {
-                  if (input.charCodeAt(pos) === 125) {
-                    result5 = "}";
+                  if (input.charCodeAt(pos) === 123) {
+                    result5 = "{";
                     pos++;
                   } else {
                     result5 = null;
                     if (reportFailures === 0) {
-                      matchFailed("\"}\"");
+                      matchFailed("\"{\"");
                     }
                   }
                   if (result5 !== null) {
-                    result6 = parse_ident();
+                    result6 = parse_mix();
                     if (result6 !== null) {
-                      result0 = [result0, result1, result2, result3, result4, result5, result6];
+                      if (input.charCodeAt(pos) === 125) {
+                        result7 = "}";
+                        pos++;
+                      } else {
+                        result7 = null;
+                        if (reportFailures === 0) {
+                          matchFailed("\"}\"");
+                        }
+                      }
+                      if (result7 !== null) {
+                        result8 = parse_ident();
+                        if (result8 !== null) {
+                          result9 = parse_comments();
+                          if (result9 !== null) {
+                            result0 = [result0, result1, result2, result3, result4, result5, result6, result7, result8, result9];
+                          } else {
+                            result0 = null;
+                            pos = pos1;
+                          }
+                        } else {
+                          result0 = null;
+                          pos = pos1;
+                        }
+                      } else {
+                        result0 = null;
+                        pos = pos1;
+                      }
                     } else {
                       result0 = null;
                       pos = pos1;
@@ -196,7 +214,7 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v, m) {return '{"' + v + '":[' + m + "]}"})(pos0, result0[1], result0[4]);
+          result0 = (function(offset, v, m) {return '{"' + v + '":[' + m + "]}"})(pos0, result0[3], result0[6]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -230,7 +248,7 @@ qmlparser = (function(){
             }
           }
           if (result1 !== null) {
-            result2 = parse_comments();
+            result2 = parse_ident();
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {

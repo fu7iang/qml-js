@@ -9,7 +9,7 @@ start =
   c:code {return "[" + c + "]"}
 
 code "code" = 
-  comments ident
+  ident comments ident
     v:var ident "{" m:mix "}"
   ident comments 
   {return '{"' + v + '":[' + m + "]}"}
