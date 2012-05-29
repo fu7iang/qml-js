@@ -9,7 +9,7 @@ start =
   c:code {return "[" + c + "]"}
 
 code "code" = 
-  ident
+  comments
     v:var ident "{" m:mix "}"
   ident 
   {return '{"' + v + '":[' + m + "]}"}
@@ -18,14 +18,14 @@ mix "mix" =
   ident 
     x:(declarations
     /code)* 
-  ident {return x.join(",")}
+  comments {return x.join(",")}
 
 declarations "declarations" =
   x: (declaration break ident) {return x.join("")} 
   /d:declaration break? {return d}
 
 declaration "declaration" =
-  l:var spaces ":" spaces r:val {return '{"' + l + '"' + ":" + r + "}"}
+  l:var spaces ":" spaces r:val comments {return '{"' + l + '"' + ":" + r + "}"}
 
 break "break" =
   (";" / "\n") { return ""}
@@ -46,6 +46,13 @@ sign =
   "+" { return ""}
  /"-"
  / ""
+comments "comments" = 
+   (ident one_line_comment ident / ident multi_line_comment ident)* 
+one_line_comment "one line comment" =
+  "//" [^"\n"]* "\n"   {return ""}
+
+multi_line_comment "multi line comment" = 
+  "/*" [^"*/"]* "*/" {return ""}
 
 integer "integer" =
   s:sign spaces digits:[0-9]+ { return s + parseInt(digits.join(""), 10); }

@@ -48,6 +48,9 @@ qmlparser = (function(){
         "var": parse_var,
         "alphanumeric": parse_alphanumeric,
         "sign": parse_sign,
+        "comments": parse_comments,
+        "one_line_comment": parse_one_line_comment,
+        "multi_line_comment": parse_multi_line_comment,
         "integer": parse_integer,
         "floating": parse_floating,
         "string": parse_string,
@@ -133,7 +136,7 @@ qmlparser = (function(){
         reportFailures++;
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_ident();
+        result0 = parse_comments();
         if (result0 !== null) {
           result1 = parse_var();
           if (result1 !== null) {
@@ -227,7 +230,7 @@ qmlparser = (function(){
             }
           }
           if (result1 !== null) {
-            result2 = parse_ident();
+            result2 = parse_comments();
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
@@ -319,7 +322,7 @@ qmlparser = (function(){
       }
       
       function parse_declaration() {
-        var result0, result1, result2, result3, result4;
+        var result0, result1, result2, result3, result4, result5;
         var pos0, pos1;
         
         reportFailures++;
@@ -343,7 +346,13 @@ qmlparser = (function(){
               if (result3 !== null) {
                 result4 = parse_val();
                 if (result4 !== null) {
-                  result0 = [result0, result1, result2, result3, result4];
+                  result5 = parse_comments();
+                  if (result5 !== null) {
+                    result0 = [result0, result1, result2, result3, result4, result5];
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
                 } else {
                   result0 = null;
                   pos = pos1;
@@ -714,6 +723,258 @@ qmlparser = (function(){
           if (result0 === null) {
             result0 = "";
           }
+        }
+        return result0;
+      }
+      
+      function parse_comments() {
+        var result0, result1, result2, result3;
+        var pos0;
+        
+        reportFailures++;
+        result0 = [];
+        pos0 = pos;
+        result1 = parse_ident();
+        if (result1 !== null) {
+          result2 = parse_one_line_comment();
+          if (result2 !== null) {
+            result3 = parse_ident();
+            if (result3 !== null) {
+              result1 = [result1, result2, result3];
+            } else {
+              result1 = null;
+              pos = pos0;
+            }
+          } else {
+            result1 = null;
+            pos = pos0;
+          }
+        } else {
+          result1 = null;
+          pos = pos0;
+        }
+        if (result1 === null) {
+          pos0 = pos;
+          result1 = parse_ident();
+          if (result1 !== null) {
+            result2 = parse_multi_line_comment();
+            if (result2 !== null) {
+              result3 = parse_ident();
+              if (result3 !== null) {
+                result1 = [result1, result2, result3];
+              } else {
+                result1 = null;
+                pos = pos0;
+              }
+            } else {
+              result1 = null;
+              pos = pos0;
+            }
+          } else {
+            result1 = null;
+            pos = pos0;
+          }
+        }
+        while (result1 !== null) {
+          result0.push(result1);
+          pos0 = pos;
+          result1 = parse_ident();
+          if (result1 !== null) {
+            result2 = parse_one_line_comment();
+            if (result2 !== null) {
+              result3 = parse_ident();
+              if (result3 !== null) {
+                result1 = [result1, result2, result3];
+              } else {
+                result1 = null;
+                pos = pos0;
+              }
+            } else {
+              result1 = null;
+              pos = pos0;
+            }
+          } else {
+            result1 = null;
+            pos = pos0;
+          }
+          if (result1 === null) {
+            pos0 = pos;
+            result1 = parse_ident();
+            if (result1 !== null) {
+              result2 = parse_multi_line_comment();
+              if (result2 !== null) {
+                result3 = parse_ident();
+                if (result3 !== null) {
+                  result1 = [result1, result2, result3];
+                } else {
+                  result1 = null;
+                  pos = pos0;
+                }
+              } else {
+                result1 = null;
+                pos = pos0;
+              }
+            } else {
+              result1 = null;
+              pos = pos0;
+            }
+          }
+        }
+        reportFailures--;
+        if (reportFailures === 0 && result0 === null) {
+          matchFailed("comments");
+        }
+        return result0;
+      }
+      
+      function parse_one_line_comment() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        reportFailures++;
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 2) === "//") {
+          result0 = "//";
+          pos += 2;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"//\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = [];
+          if (/^[^"\n"]/.test(input.charAt(pos))) {
+            result2 = input.charAt(pos);
+            pos++;
+          } else {
+            result2 = null;
+            if (reportFailures === 0) {
+              matchFailed("[^\"\\n\"]");
+            }
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            if (/^[^"\n"]/.test(input.charAt(pos))) {
+              result2 = input.charAt(pos);
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("[^\"\\n\"]");
+              }
+            }
+          }
+          if (result1 !== null) {
+            if (input.charCodeAt(pos) === 10) {
+              result2 = "\n";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"\\n\"");
+              }
+            }
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {return ""})(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        reportFailures--;
+        if (reportFailures === 0 && result0 === null) {
+          matchFailed("one line comment");
+        }
+        return result0;
+      }
+      
+      function parse_multi_line_comment() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        reportFailures++;
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 2) === "/*") {
+          result0 = "/*";
+          pos += 2;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"/*\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = [];
+          if (/^[^"*\/"]/.test(input.charAt(pos))) {
+            result2 = input.charAt(pos);
+            pos++;
+          } else {
+            result2 = null;
+            if (reportFailures === 0) {
+              matchFailed("[^\"*\\/\"]");
+            }
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            if (/^[^"*\/"]/.test(input.charAt(pos))) {
+              result2 = input.charAt(pos);
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("[^\"*\\/\"]");
+              }
+            }
+          }
+          if (result1 !== null) {
+            if (input.substr(pos, 2) === "*/") {
+              result2 = "*/";
+              pos += 2;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"*/\"");
+              }
+            }
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {return ""})(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        reportFailures--;
+        if (reportFailures === 0 && result0 === null) {
+          matchFailed("multi line comment");
         }
         return result0;
       }
