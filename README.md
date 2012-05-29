@@ -17,7 +17,7 @@ Most of QML is not implemented yet (no advanced positioning, only basic items, n
     border.color:white
     border.size:3
     radius:25;
-    radius 20
+    radius:20
     opacity:{1-0.4/(2/1)}
     z:1
 }
