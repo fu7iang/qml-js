@@ -6,8 +6,11 @@ Written by Daniël Heres 2012
 */
 function val(v, id, prop) {
   if (typeof(v)==="string") {
-    if (!graph[id].updates) graph[id].updates = {}
+    if (!graph[id].updates) graph[id].updates = {};
+    if(!graph[id].subscribers) graph[id].subscribers = [];
+    //todo subscribe to vars
     graph[id].updates[prop] = new Function("return " + v);
+    graph[id].subscribers.map(function(f) {f();});
     return graph[id].updates[prop]();
   }
   return v;
@@ -19,30 +22,30 @@ var qml_convert = {
     var div = document.createElement(t || "div");
     div.style.position="absolute";
     i.map(function(e) {
-      if(e.id) {
+      if(e.id!==undefined) {
         div.id=e.id;
       }
       else e.id = global_id++ + "qmljs";
       graph[e.id] = {}
       graph[e.id].id = e.id;
-      if(e.width) div.style.width=val(e.width, e.id, "width");
-      if(e.height) div.style.height=val(e.height, e.id, "height");
-      if(e.x) div.style.left=val(e.x, e.id, "x") + "px";
-      if(e.y) div.style.top=val(e.y, e.id, "y") + "px";
-      if(e.z) div.style.zIndex = val(e.z, e.id, "z");
-      if(e.opacity) div.style.opacity=val(e.opacity, e.id, "opacity");
+      if(e.width!==undefined) div.style.width=val(e.width, e.id, "width");
+      if(e.height!==undefined) div.style.height=val(e.height, e.id, "height");
+      if(e.x!==undefined) div.style.left=val(e.x, e.id, "x") + "px";
+      if(e.y!==undefined) div.style.top=val(e.y, e.id, "y") + "px";
+      if(e.z!==undefined) div.style.zIndex = val(e.z, e.id, "z");
+      if(e.opacity!==undefined) div.style.opacity=val(e.opacity, e.id, "opacity");
       if(e.visible==="false") div.style.visibility="hidden";
       if(e.focus==="true") div.autofocus="true";
       if(e.clip==="false")div.style.overflow="visible";
       if(e.clip==="true")div.style.overflow="hidden";
-      if(e.rotate) {
+      if(e.rotate!==undefined) {
         var rot = "rotate(" + e.rotate + "deg)";
         div.style.webkitTransform=rot;
         div.style.MozTransform=rot;
         div.style.oTransform=rot;
         div.style.transform=rot;
       }
-      if(e.scale) {
+      if(e.scale!==undefined) {
         var scale = "scale(" + e.scale + ")";
         div.style.webkitTransform+=scale;
         div.style.MozTransform+=scale;
@@ -57,14 +60,14 @@ var qml_convert = {
   rectangle: function(i) {
     var div = qml_convert.item(i);
     i.map(function(e) {
-      if(e.color) div.style.backgroundColor = e.color;
-      if(e['border.color']) div.style.borderColor = e['border.color'];
-      if(e['border.size']){
+      if(e.color!==undefined) div.style.backgroundColor = e.color;
+      if(e['border.color']!==undefined) div.style.borderColor = e['border.color'];
+      if(e['border.size']!==undefined){
         div.style.borderWidth = e['border.size'] + "px";
         div.style.borderStyle="solid";
       }
-      if(e.radius) div.style.borderRadius = e.radius + "px";
-      if(e.gradient) {
+      if(e.radius!==undefined) div.style.borderRadius = e.radius + "px";
+      if(e.gradient!==undefined) {
         var grad = [];
         e.gradient.Gradient.map(function(gs) {
           gradient_stop = {color: "", position:0}
@@ -74,21 +77,27 @@ var qml_convert = {
           });
           grad.push(gradient_stop.color + " " + gradient_stop.position * 100 + "%");
         });
-        console.log(grad);
         div.style.backgroundImage = "linear-gradient(top, " + grad.join(",") + ")";
         div.style.backgroundImage = "-o-linear-gradient(top, " + grad.join(",") + ")";
         div.style.backgroundImage = "-moz-linear-gradient(top, " + grad.join(",") + ")";
         div.style.backgroundImage = "-webkit-linear-gradient(top, " + grad.join(",") + ")";
         div.style.backgroundImage = "-ms-linear-gradient(top, " + grad.join(",") + ")";
       }
-    });
+    })
     return div;
   },
 
   image: function(i) {
     var img = qml_convert.item(i);
     i.map(function(e) {
-      if(e.source) {img.style.backgroundImage = "url(" + e.source + ")";}
+      if(e.source!==undefined) img.style.backgroundImage = "url(" + e.source + ")";
+      if(e.mirror==="true") {
+        img.style.webkitTransform = "scale(-1, 1)";
+        img.style.MozTransform = "scale(-1, 1)";
+        img.style.oTransform = "scale(-1, 1)";
+        img.style.msTransform = "scale(-1, 1)";
+        img.style.transform = "scale(-1, 1)";
+      }
       switch(e.fillMode) {
         case "Image.PreserveAspectFit":
           img.style.backgroundSize = "contain";
@@ -108,19 +117,19 @@ var qml_convert = {
   text: function(t) {
     var text = qml_convert.item(t);
     t.map(function(e) {
-      if(e.text) text.innerHTML = e.text;
+      if(e.text!==undefined) text.innerHTML = e.text;
 
-      if(e.color) text.style.color=e.color;
+      if(e.color!==undefined) text.style.color=e.color;
 
       if(e["font.bold"] ==="true") text.style.fontWeight="bold";
-      if(e["font.italic"]) text.style.fontStyle="italic";
-      if(e["font.pixelSize"]) text.style.fontSize+=e["font.pixelSize"] + "px";
-      if(e["font.pointSize"]) text.style.fontSize+=e["font.pointSize"] + "pt";
-      if(e["font.family"]) text.style.fontFamily = e["font.family"];
+      if(e["font.italic"]!==undefined) text.style.fontStyle="italic";
+      if(e["font.pixelSize"]!==undefined) text.style.fontSize+=e["font.pixelSize"] + "px";
+      if(e["font.pointSize"]!==undefined) text.style.fontSize+=e["font.pointSize"] + "pt";
+      if(e["font.family"]!==undefined) text.style.fontFamily = e["font.family"];
       if(e["font.underline"]==="true") text.style.textDecoration+=" underline";
       if(e["font.strikeout"]==="true") text.style.textDecoration+=" line-through";
-      if(e["font.letterspacing"]) text.style.letterSpacing = e["font.letterspacing"] + "px";
-      if(e["font.wordspacing"]) text.style.wordSpacing = e["font.wordspacing"] + "px";
+      if(e["font.letterspacing"]!==undefined) text.style.letterSpacing = e["font.letterspacing"] + "px";
+      if(e["font.wordspacing"]!==undefined) text.style.wordSpacing = e["font.wordspacing"] + "px";
       switch(e['font.capitalization']) {
         case "Font.AllUppercase":
           text.style.textTransform = "uppercase";
@@ -176,6 +185,12 @@ var qml_convert = {
       }
     });
     return text;
+  },
+  mouse_area: function(m) {
+    var mouse = qml_convert.item(m);
+    m.map(function(e) {
+      
+    });
   }
 }
 
@@ -185,10 +200,12 @@ function convert_to_page(json, e) {
     if(j.Rectangle) e.appendChild(qml_convert.rectangle(j.Rectangle));
     if(j.Image) e.appendChild(qml_convert.image(j.Image));
     if(j.Text) e.appendChild(qml_convert.text(j.Text));
+    if(j.MouseArea) e.appendChild(qml_convert.mouse_area(j.Text));
   });
   return e;
 }
 
 var p = qmlparser.parse(document.getElementById("qml").innerHTML);
-var page = convert_to_page(JSON.parse(p), document.createElement("div"));
+var json = JSON.parse(p);
+var page = convert_to_page(json, document.createElement("div"));
 document.getElementById("qml").appendChild(page);

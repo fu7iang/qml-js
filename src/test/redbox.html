@@ -7,19 +7,19 @@
 //just a red box!
 Rectangle {
   width:400;
-  color:red;
+  color:"red";
   height:{198+5}
   id:red
-  border.color:blue
+  border.color:"blue"
   border.size:5
   radius:20;
   Rectangle {
     width:120;
     height : 40;
-    color:orange;
+    color:"orange";
     x:40;
     y:20;
-    border.color:white
+    border.color:"white"
     border.size:3
     radius:25;
     opacity:{1-0.4/(2/1)}
@@ -56,7 +56,8 @@ Rectangle {
     y:0;
     rotate:60
     scale:2
-    z:2
+    z:0
+    radius:5
     gradient: Gradient{
       GradientStop { position:0.0; color:"red"}
       GradientStop { position:1.0; color:"green"}
@@ -66,7 +67,7 @@ Rectangle {
   Rectangle {
     width:40;
     height : 40;
-    color:orange;
+    color:"orange";
     x:300;
     y:0;
     rotate:60
@@ -80,6 +81,7 @@ Rectangle {
     height:20;
     width:20;
     fillMode:Image.PreserveAspectFit
+    mirror:true
   }
 }
 </div>

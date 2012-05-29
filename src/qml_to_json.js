@@ -82,7 +82,6 @@ primary
   / "(" additive:additive ")" { return "(" + additive + ")"; }
   / v:var {return "graph." + v}
 
-
 expression "expression" =
   "{" spaces a:additive spaces "}" {return '"' + a + '"'}
 
