@@ -52,11 +52,15 @@ Rectangle {
   Rectangle {
     width:40;
     height : 40;
-    color:orange;
     x:90;
     y:0;
     rotate:60
     scale:2
+    z:2
+    gradient: Gradient{
+      GradientStop { position:0.0; color:"red"}
+      GradientStop { position:1.0; color:"green"}
+    }
     
   }
   Rectangle {

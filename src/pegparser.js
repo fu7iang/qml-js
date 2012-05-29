@@ -340,7 +340,7 @@ qmlparser = (function(){
       }
       
       function parse_declaration() {
-        var result0, result1, result2, result3, result4, result5;
+        var result0, result1, result2, result3, result4, result5, result6, result7, result8;
         var pos0, pos1;
         
         reportFailures++;
@@ -360,13 +360,47 @@ qmlparser = (function(){
               }
             }
             if (result2 !== null) {
-              result3 = parse_spaces();
+              result3 = parse_ident();
               if (result3 !== null) {
-                result4 = parse_val();
+                result4 = parse_var();
                 if (result4 !== null) {
-                  result5 = parse_comments();
+                  result5 = parse_ident();
                   if (result5 !== null) {
-                    result0 = [result0, result1, result2, result3, result4, result5];
+                    if (input.charCodeAt(pos) === 123) {
+                      result6 = "{";
+                      pos++;
+                    } else {
+                      result6 = null;
+                      if (reportFailures === 0) {
+                        matchFailed("\"{\"");
+                      }
+                    }
+                    if (result6 !== null) {
+                      result7 = parse_mix();
+                      if (result7 !== null) {
+                        if (input.charCodeAt(pos) === 125) {
+                          result8 = "}";
+                          pos++;
+                        } else {
+                          result8 = null;
+                          if (reportFailures === 0) {
+                            matchFailed("\"}\"");
+                          }
+                        }
+                        if (result8 !== null) {
+                          result0 = [result0, result1, result2, result3, result4, result5, result6, result7, result8];
+                        } else {
+                          result0 = null;
+                          pos = pos1;
+                        }
+                      } else {
+                        result0 = null;
+                        pos = pos1;
+                      }
+                    } else {
+                      result0 = null;
+                      pos = pos1;
+                    }
                   } else {
                     result0 = null;
                     pos = pos1;
@@ -392,10 +426,65 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, l, r) {return '{"' + l + '"' + ":" + r + "}"})(pos0, result0[0], result0[4]);
+          result0 = (function(offset, l, r, m) {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'})(pos0, result0[0], result0[4], result0[7]);
         }
         if (result0 === null) {
           pos = pos0;
+        }
+        if (result0 === null) {
+          pos0 = pos;
+          pos1 = pos;
+          result0 = parse_var();
+          if (result0 !== null) {
+            result1 = parse_spaces();
+            if (result1 !== null) {
+              if (input.charCodeAt(pos) === 58) {
+                result2 = ":";
+                pos++;
+              } else {
+                result2 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\":\"");
+                }
+              }
+              if (result2 !== null) {
+                result3 = parse_spaces();
+                if (result3 !== null) {
+                  result4 = parse_val();
+                  if (result4 !== null) {
+                    result5 = parse_comments();
+                    if (result5 !== null) {
+                      result0 = [result0, result1, result2, result3, result4, result5];
+                    } else {
+                      result0 = null;
+                      pos = pos1;
+                    }
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, l, r) {return '{"' + l + '"' + ":" + r + "}"})(pos0, result0[0], result0[4]);
+          }
+          if (result0 === null) {
+            pos = pos0;
+          }
         }
         reportFailures--;
         if (reportFailures === 0 && result0 === null) {

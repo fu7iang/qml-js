@@ -25,7 +25,8 @@ declarations "declarations" =
   /d:declaration break? {return d}
 
 declaration "declaration" =
-  l:var spaces ":" spaces r:val comments {return '{"' + l + '"' + ":" + r + "}"}
+  l:var spaces ":" ident r:var ident "{" m:mix "}" {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'}
+  /l:var spaces ":" spaces r:val comments {return '{"' + l + '"' + ":" + r + "}"}
 
 break "break" =
   (";" / "\n") { return ""}

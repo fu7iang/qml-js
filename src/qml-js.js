@@ -63,7 +63,24 @@ var qml_convert = {
         div.style.borderWidth = e['border.size'] + "px";
         div.style.borderStyle="solid";
       }
-      if(e['radius']) div.style.borderRadius = e['radius'] + "px";
+      if(e.radius) div.style.borderRadius = e.radius + "px";
+      if(e.gradient) {
+        var grad = [];
+        e.gradient.Gradient.map(function(gs) {
+          gradient_stop = {color: "", position:0}
+          gs.GradientStop.map(function(e) {
+            if(e.position!==undefined) gradient_stop.position = e.position
+            if(e.color!==undefined) gradient_stop.color = e.color
+          });
+          grad.push(gradient_stop.color + " " + gradient_stop.position * 100 + "%");
+        });
+        console.log(grad);
+        div.style.backgroundImage = "linear-gradient(top, " + grad.join(",") + ")";
+        div.style.backgroundImage = "-o-linear-gradient(top, " + grad.join(",") + ")";
+        div.style.backgroundImage = "-moz-linear-gradient(top, " + grad.join(",") + ")";
+        div.style.backgroundImage = "-webkit-linear-gradient(top, " + grad.join(",") + ")";
+        div.style.backgroundImage = "-ms-linear-gradient(top, " + grad.join(",") + ")";
+      }
     });
     return div;
   },
