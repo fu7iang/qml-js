@@ -1672,6 +1672,35 @@ qmlparser = (function(){
         if (result0 === null) {
           pos = pos0;
         }
+        if (result0 === null) {
+          pos0 = pos;
+          pos1 = pos;
+          result0 = parse_spaces();
+          if (result0 !== null) {
+            result1 = parse_additive();
+            if (result1 !== null) {
+              result2 = parse_spaces();
+              if (result2 !== null) {
+                result0 = [result0, result1, result2];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, a) {return '"' + a + '"'})(pos0, result0[1]);
+          }
+          if (result0 === null) {
+            pos = pos0;
+          }
+        }
         reportFailures--;
         if (reportFailures === 0 && result0 === null) {
           matchFailed("expression");
@@ -1684,22 +1713,22 @@ qmlparser = (function(){
         var pos0;
         
         reportFailures++;
-        result0 = parse_floating();
+        result0 = parse_expression();
         if (result0 === null) {
-          result0 = parse_integer();
+          result0 = parse_floating();
           if (result0 === null) {
-            result0 = parse_string();
+            result0 = parse_integer();
             if (result0 === null) {
-              pos0 = pos;
-              result0 = parse_var();
-              if (result0 !== null) {
-                result0 = (function(offset, v) {return '"' + v + '"'})(pos0, result0);
-              }
+              result0 = parse_string();
               if (result0 === null) {
-                pos = pos0;
-              }
-              if (result0 === null) {
-                result0 = parse_expression();
+                pos0 = pos;
+                result0 = parse_var();
+                if (result0 !== null) {
+                  result0 = (function(offset, v) {return '"' + v + '"'})(pos0, result0);
+                }
+                if (result0 === null) {
+                  pos = pos0;
+                }
               }
             }
           }

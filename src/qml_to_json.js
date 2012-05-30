@@ -84,10 +84,12 @@ primary
 
 expression "expression" =
   "{" spaces a:additive spaces "}" {return '"' + a + '"'}
+  / spaces a:additive spaces {return '"' + a + '"'}
+
 
 val "val" =
- floating
+ expression
+ /floating
  /integer
  /string
  /v:var {return '"' + v + '"'}
- /e:expression
