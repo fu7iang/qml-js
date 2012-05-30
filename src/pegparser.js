@@ -58,6 +58,7 @@ qmlparser = (function(){
         "multiplicative": parse_multiplicative,
         "primary": parse_primary,
         "expression": parse_expression,
+        "boolean": parse_boolean,
         "val": parse_val
       };
       
@@ -314,6 +315,9 @@ qmlparser = (function(){
         if (result0 === null) {
           pos = pos0;
         }
+        if (result0 === null) {
+          result0 = parse_declaration();
+        }
         reportFailures--;
         if (reportFailures === 0 && result0 === null) {
           matchFailed("declarations");
@@ -330,7 +334,7 @@ qmlparser = (function(){
         pos1 = pos;
         result0 = parse_var();
         if (result0 !== null) {
-          result1 = parse_spaces();
+          result1 = parse_ident();
           if (result1 !== null) {
             if (input.charCodeAt(pos) === 58) {
               result2 = ":";
@@ -418,7 +422,7 @@ qmlparser = (function(){
           pos1 = pos;
           result0 = parse_var();
           if (result0 !== null) {
-            result1 = parse_spaces();
+            result1 = parse_ident();
             if (result1 !== null) {
               if (input.charCodeAt(pos) === 58) {
                 result2 = ":";
@@ -430,7 +434,7 @@ qmlparser = (function(){
                 }
               }
               if (result2 !== null) {
-                result3 = parse_spaces();
+                result3 = parse_ident();
                 if (result3 !== null) {
                   result4 = parse_val();
                   if (result4 !== null) {
@@ -1669,26 +1673,68 @@ qmlparser = (function(){
         return result0;
       }
       
+      function parse_boolean() {
+        var result0;
+        var pos0;
+        
+        reportFailures++;
+        pos0 = pos;
+        if (input.substr(pos, 4) === "true") {
+          result0 = "true";
+          pos += 4;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"true\"");
+          }
+        }
+        if (result0 === null) {
+          if (input.substr(pos, 5) === "false") {
+            result0 = "false";
+            pos += 5;
+          } else {
+            result0 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"false\"");
+            }
+          }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, b) {return '"' + b + '"'})(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        reportFailures--;
+        if (reportFailures === 0 && result0 === null) {
+          matchFailed("boolean");
+        }
+        return result0;
+      }
+      
       function parse_val() {
         var result0;
         var pos0;
         
         reportFailures++;
-        result0 = parse_expression();
+        result0 = parse_boolean();
         if (result0 === null) {
-          result0 = parse_floating();
+          result0 = parse_expression();
           if (result0 === null) {
-            result0 = parse_integer();
+            result0 = parse_floating();
             if (result0 === null) {
-              result0 = parse_string();
+              result0 = parse_integer();
               if (result0 === null) {
-                pos0 = pos;
-                result0 = parse_var();
-                if (result0 !== null) {
-                  result0 = (function(offset, v) {return '"' + v + '"'})(pos0, result0);
-                }
+                result0 = parse_string();
                 if (result0 === null) {
-                  pos = pos0;
+                  pos0 = pos;
+                  result0 = parse_var();
+                  if (result0 !== null) {
+                    result0 = (function(offset, v) {return '"' + v + '"'})(pos0, result0);
+                  }
+                  if (result0 === null) {
+                    pos = pos0;
+                  }
                 }
               }
             }

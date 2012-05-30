@@ -40,12 +40,13 @@ var qml_convert = {
       if(e.y!==undefined) div.style.top=val(e.y, e.id, "y") + "px";
       if(e.z!==undefined) div.style.zIndex = val(e.z, e.id, "z");
       if(e.opacity!==undefined) div.style.opacity=val(e.opacity, e.id, "opacity");
+      console.log(e.visible);
       if(e.visible==="false") div.style.visibility="hidden";
       if(e.focus==="true") div.autofocus="true";
       if(e.clip==="false")div.style.overflow="visible";
       if(e.clip==="true")div.style.overflow="hidden";
-      if(e.rotate!==undefined) {
-        var rot = "rotate(" + e.rotate + "deg)";
+      if(e.rotation!==undefined) {
+        var rot = "rotate(" + e.rotation + "deg)";
         div.style.webkitTransform=rot;
         div.style.MozTransform=rot;
         div.style.oTransform=rot;
@@ -68,8 +69,8 @@ var qml_convert = {
     i.map(function(e) {
       if(e.color!==undefined) div.style.backgroundColor = e.color;
       if(e['border.color']!==undefined) div.style.borderColor = e['border.color'];
-      if(e['border.size']!==undefined){
-        div.style.borderWidth = e['border.size'] + "px";
+      if(e['border.width']!==undefined){
+        div.style.borderWidth = e['border.width'] + "px";
         div.style.borderStyle="solid";
       }
       if(e.radius!==undefined) div.style.borderRadius = e.radius + "px";
@@ -134,8 +135,8 @@ var qml_convert = {
       if(e["font.family"]!==undefined) text.style.fontFamily = e["font.family"];
       if(e["font.underline"]==="true") text.style.textDecoration+=" underline";
       if(e["font.strikeout"]==="true") text.style.textDecoration+=" line-through";
-      if(e["font.letterspacing"]!==undefined) text.style.letterSpacing = e["font.letterspacing"] + "px";
-      if(e["font.wordspacing"]!==undefined) text.style.wordSpacing = e["font.wordspacing"] + "px";
+      if(e["font.letterSpacing"]!==undefined) text.style.letterSpacing = e["font.letterspacing"] + "px";
+      if(e["font.wordSpacing"]!==undefined) text.style.wordSpacing = e["font.wordspacing"] + "px";
       switch(e['font.capitalization']) {
         case "Font.AllUppercase":
           text.style.textTransform = "uppercase";

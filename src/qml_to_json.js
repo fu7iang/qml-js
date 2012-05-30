@@ -21,11 +21,12 @@ mix "mix" =
   ident {return x.join(",")}
 
 declarations "declarations" =
-  x:declaration break ident {return x} 
+  x:declaration break ident {return x}
+  /x:declaration
 
 declaration "declaration" =
-  l:var spaces ":" ident r:var ident "{" m:mix "}" {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'}
-  /l:var spaces ":" spaces r:val comments {return '{"' + l + '"' + ":" + r + "}"}
+  l:var ident":" ident r:var ident "{" m:mix "}" {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'}
+  /l:var ident":" ident r:val comments {return '{"' + l + '"' + ":" + r + "}"}
 
 break "break" =
   (";" / "\n") { return ""}
@@ -82,9 +83,13 @@ expression "expression" =
   "{" spaces a:additive spaces "}" {return '"' + a + '"'}
   / spaces a:additive spaces {return '"' + a + '"'}
 
+boolean "boolean" = 
+  b:("true" / "false") {return '"' + b + '"'}
+
 
 val "val" =
- expression
+ boolean
+ /expression
  /floating
  /integer
  /string
