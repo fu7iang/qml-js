@@ -15,7 +15,7 @@ code "code" =
   {return '{"' + v + '":[' + m + "]}"}
 
 mix "mix" =
-  ident 
+  ident comments
     x:(declarations
     /code)* 
   ident {return x.join(",")}
@@ -91,4 +91,3 @@ val "val" =
  /string
  /v:var {return '"' + v + '"'}
  /e:expression
-

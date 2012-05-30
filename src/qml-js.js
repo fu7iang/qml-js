@@ -4,18 +4,24 @@ Written by Daniël Heres 2012
 
 
 */
+function item() {
+  this.x = 0;
+  this.y = 0;
+}
+var graph = {};
+var funcs = [];
+
 function val(v, id, prop) {
   if (typeof(v)==="string") {
     if (!graph[id].updates) graph[id].updates = {};
     if(!graph[id].subscribers) graph[id].subscribers = [];
     //todo subscribe to vars
     graph[id].updates[prop] = new Function("return " + v);
-    graph[id].subscribers.map(function(f) {f();});
+    funcs+={id:id, func: graph[id].updates[prop]};
     return graph[id].updates[prop]();
   }
   return v;
 }
-var graph = {};
 var global_id = 0;
 var qml_convert = {
   item: function(i, t) {

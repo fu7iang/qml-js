@@ -227,7 +227,7 @@ qmlparser = (function(){
       }
       
       function parse_mix() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         reportFailures++;
@@ -235,22 +235,28 @@ qmlparser = (function(){
         pos1 = pos;
         result0 = parse_ident();
         if (result0 !== null) {
-          result1 = [];
-          result2 = parse_declarations();
-          if (result2 === null) {
-            result2 = parse_code();
-          }
-          while (result2 !== null) {
-            result1.push(result2);
-            result2 = parse_declarations();
-            if (result2 === null) {
-              result2 = parse_code();
-            }
-          }
+          result1 = parse_comments();
           if (result1 !== null) {
-            result2 = parse_ident();
+            result2 = [];
+            result3 = parse_declarations();
+            if (result3 === null) {
+              result3 = parse_code();
+            }
+            while (result3 !== null) {
+              result2.push(result3);
+              result3 = parse_declarations();
+              if (result3 === null) {
+                result3 = parse_code();
+              }
+            }
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_ident();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
             } else {
               result0 = null;
               pos = pos1;
@@ -264,7 +270,7 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, x) {return x.join(",")})(pos0, result0[1]);
+          result0 = (function(offset, x) {return x.join(",")})(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
