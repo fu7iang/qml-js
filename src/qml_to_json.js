@@ -55,7 +55,7 @@ one_line_comment "one line comment" =
   "//" [^"\n"]* "\n"   {return ""}
 
 multi_line_comment "multi line comment" = 
-  "/*" [^"*/"]* "*/" {return ""}
+  "/*" (!"*/" .)* "*/" {return ""}
 
 integer "integer" =
   s:sign spaces digits:[0-9]+ { return s + parseInt(digits.join(""), 10); }

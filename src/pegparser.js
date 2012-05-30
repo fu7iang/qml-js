@@ -1017,8 +1017,8 @@ qmlparser = (function(){
       }
       
       function parse_multi_line_comment() {
-        var result0, result1, result2;
-        var pos0, pos1;
+        var result0, result1, result2, result3;
+        var pos0, pos1, pos2, pos3;
         
         reportFailures++;
         pos0 = pos;
@@ -1034,25 +1034,85 @@ qmlparser = (function(){
         }
         if (result0 !== null) {
           result1 = [];
-          if (/^[^"*\/"]/.test(input.charAt(pos))) {
-            result2 = input.charAt(pos);
-            pos++;
+          pos2 = pos;
+          pos3 = pos;
+          reportFailures++;
+          if (input.substr(pos, 2) === "*/") {
+            result2 = "*/";
+            pos += 2;
           } else {
             result2 = null;
             if (reportFailures === 0) {
-              matchFailed("[^\"*\\/\"]");
+              matchFailed("\"*/\"");
             }
+          }
+          reportFailures--;
+          if (result2 === null) {
+            result2 = "";
+          } else {
+            result2 = null;
+            pos = pos3;
+          }
+          if (result2 !== null) {
+            if (input.length > pos) {
+              result3 = input.charAt(pos);
+              pos++;
+            } else {
+              result3 = null;
+              if (reportFailures === 0) {
+                matchFailed("any character");
+              }
+            }
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          } else {
+            result2 = null;
+            pos = pos2;
           }
           while (result2 !== null) {
             result1.push(result2);
-            if (/^[^"*\/"]/.test(input.charAt(pos))) {
-              result2 = input.charAt(pos);
-              pos++;
+            pos2 = pos;
+            pos3 = pos;
+            reportFailures++;
+            if (input.substr(pos, 2) === "*/") {
+              result2 = "*/";
+              pos += 2;
             } else {
               result2 = null;
               if (reportFailures === 0) {
-                matchFailed("[^\"*\\/\"]");
+                matchFailed("\"*/\"");
               }
+            }
+            reportFailures--;
+            if (result2 === null) {
+              result2 = "";
+            } else {
+              result2 = null;
+              pos = pos3;
+            }
+            if (result2 !== null) {
+              if (input.length > pos) {
+                result3 = input.charAt(pos);
+                pos++;
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("any character");
+                }
+              }
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
             }
           }
           if (result1 !== null) {
