@@ -7,7 +7,10 @@
 //just a red box!
 Rectangle {
   width:400;
-  color:"red";
+  gradient: Gradient{
+    GradientStop { position:0.0; color:"red"}
+    GradientStop { position:1.0; color:"darkred"}
+  }
   height:{198+5}
   id:red
   border.color:"blue"
@@ -15,7 +18,7 @@ Rectangle {
   radius:20;
   Rectangle {
     width:120
-    height : 40;
+    height : parent.height /2;
     color:"orange";
     x:40;
     y:20;
@@ -35,7 +38,7 @@ Rectangle {
       font.strikeout:true
       font.pixelSize:10
       //set font
-      font.family:"Arial"
+      font.family:"Comic Sans"
       font.italic:true
       font.capitalization: Font.Capitalize
       font.letterSpacing: 2
@@ -46,7 +49,7 @@ Rectangle {
     }
   }
   /*
-   *This is an orange rectangle
+   *This is an gradient rectangle
    *nice, huh?
    */
   Rectangle {
@@ -55,7 +58,7 @@ Rectangle {
     x:90;
     y:0;
     rotation: 60
-    scale:2
+    scale:1
     z:0
     radius:5
     gradient: Gradient{

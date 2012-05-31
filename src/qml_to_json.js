@@ -26,7 +26,7 @@ declarations "declarations" =
 
 declaration "declaration" =
   l:var ident":" ident r:var ident "{" m:mix "}" {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'}
-  /l:var ident":" ident r:val comments {return '{"' + l + '"' + ":" + r + "}"}
+  /l:var ident":" ident r:expression comments {return '{"' + l + '"' + ":" + r + "}"}
 
 break "break" =
   (";" / "\n") { return ""}
@@ -39,6 +39,9 @@ spaces "spaces" =
 
 var "var" =
   v:alphanumeric  p:(x:("." alphanumeric) {return x.join("")})* {return v + p.join("")}
+
+expvar "expressionvar" = 
+  v:var { return "this."  + v }
 
 alphanumeric "alphanumeric" =
   v:[a-zA-Z0-9]+ {return v.join("")}
@@ -63,7 +66,10 @@ floating "float" =
   s:sign? spaces f:([0-9] "." [0-9]) {return s + parseFloat(f.join(""));}
 
 string "string" =
-  '"' v:('\\"' / [^"\""])+ '"' {return '"' + v.join("") + '"'}
+  '"' v:('\\"' / [^"\""])+ '"' {return "'" + v.join("") + "'"}
+
+functioncall "functioncall" = 
+   v:expvar "(" spaces a:( l:(spaces x:primary spaces "," {return "," + x})* spaces m:primary {return l.join(",") + m} )? spaces ")" {return v + "(" + a + ")"}
 
 additive "additive" =
   left:multiplicative spaces op:("+"/"-") spaces right:additive { return left + op + right; }
@@ -73,24 +79,18 @@ multiplicative "multiplicative" =
   left:primary spaces op:("*"/"/") spaces right:multiplicative { return left +  op + right; }
  /primary
 
-primary
-  = floating
-  / integer
+primary "primary"
+ = floating
+  /boolean
+  /string
+  /integer
+  /functioncall
   / "(" additive:additive ")" { return "(" + additive + ")"; }
-  / v:var {return "graph." + v}
+  / v:expvar {return v}
 
 expression "expression" =
   "{" spaces a:additive spaces "}" {return '"' + a + '"'}
   / spaces a:additive spaces {return '"' + a + '"'}
 
 boolean "boolean" = 
-  b:("true" / "false") {return '"' + b + '"'}
-
-
-val "val" =
- boolean
- /expression
- /floating
- /integer
- /string
- /v:var {return '"' + v + '"'}
+  b:("true" / "false")

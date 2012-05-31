@@ -4,211 +4,267 @@ Written by Daniël Heres 2012
 
 
 */
-function item() {
-  this.x = 0;
-  this.y = 0;
+function _f(ctx, prop, expression) {
+  ctx.__defineGetter__(prop, new Function("return " + expression));
 }
-var graph = {};
-var funcs = [];
 
-function val(v, id, prop) {
-  if (typeof(v)==="string") {
-    if (!graph[id].updates) graph[id].updates = {};
-    if(!graph[id].subscribers) graph[id].subscribers = [];
-    //todo subscribe to vars
-    graph[id].updates[prop] = new Function("return " + v);
-    funcs+={id:id, func: graph[id].updates[prop]};
-    return graph[id].updates[prop]();
+function item(json, parent, ctx) {
+  ctx.id = ""
+  ctx.x = 0;
+  ctx.y = 0;
+  ctx.z = 0;
+  ctx.height = 0;
+  ctx.opacity = 1;
+  ctx.visible = "true";
+  ctx.focus = false;
+  ctx.clip = false;
+  ctx.rotation = 0;
+  ctx.scale = 1;
+  ctx.children = [];
+  ctx.parent = parent;
+  json.map(function(e) {
+    if(e.id!==undefined) e.id;
+    if(e.width!==undefined) _f(ctx, "width", e.width);
+    if(e.height!==undefined) _f(ctx, "height", e.height);
+    if(e.x!==undefined) _f(ctx, "x", e.x);
+    if(e.y!==undefined) _f(ctx, "y", e.y);
+    if(e.z!==undefined) _f(ctx, "z", e.z);
+    if(e.opacity!==undefined) _f(ctx, "opacity", e.opacity);
+    if(e.visible!==undefined) _f(ctx, "visible", e.visible);
+    if(e.focus!==undefined) _f(ctx, "focus", e.focus);
+    if(e.clip!==undefined) _f(ctx, "clip", e.clip);
+    if(e.rotation!==undefined) _f(ctx, "rotation", e.rotation);
+    if(e.scale!==undefined) _f(ctx, "scale", e.scale);
+  });
+  //create new id if it doesn't exist
+  if(ctx.id===undefined) ctx.id = global_id++ + "qmljs";
+
+  this.children = load_qml(json, ctx || this);
+
+
+  this.html = function(ctx) {
+     ctx = ctx || this;
+     var div = document.createElement("div");
+     div.style.position = "absolute";
+     div.style.width=ctx.width
+     div.style.height=ctx.height
+     div.style.left=ctx.x
+     div.style.top=ctx.y
+     div.style.zIndex = ctx.z
+     div.style.opacity=ctx.opacity;
+     div.autofocus=ctx.focus
+     if (ctx.visible) div.style.visibility="visible";
+     else div.style.visibility="hidden";
+     var rot = "rotate(" + ctx.rotation + "deg)";
+     div.style.webkitTransform=rot;
+     div.style.MozTransform=rot;
+     div.style.oTransform=rot;
+     div.style.transform=rot
+     var scale = "scale(" + ctx.scale + ")";
+     div.style.webkitTransform+=scale;
+     div.style.MozTransform+=scale
+     div.style.oTransform+=scale;
+     div.style.transform+=scale;
+     this.children.map(function(h) {
+      div.appendChild(h.html());
+     });
+     return div;
   }
-  return v;
 }
-var global_id = 0;
-var qml_convert = {
-  item: function(i, t) {
-    var div = document.createElement(t || "div");
-    div.style.position="absolute";
-    i.map(function(e) {
-      if(e.id!==undefined) {
-        div.id=e.id;
-      }
-      else e.id = global_id++ + "qmljs";
-      graph[e.id] = {}
-      graph[e.id].id = e.id;
-      if(e.width!==undefined) div.style.width=val(e.width, e.id, "width");
-      if(e.height!==undefined) div.style.height=val(e.height, e.id, "height");
-      if(e.x!==undefined) div.style.left=val(e.x, e.id, "x") + "px";
-      if(e.y!==undefined) div.style.top=val(e.y, e.id, "y") + "px";
-      if(e.z!==undefined) div.style.zIndex = val(e.z, e.id, "z");
-      if(e.opacity!==undefined) div.style.opacity=val(e.opacity, e.id, "opacity");
-      console.log(e.visible);
-      if(e.visible==="false") div.style.visibility="hidden";
-      if(e.focus==="true") div.autofocus="true";
-      if(e.clip==="false")div.style.overflow="visible";
-      if(e.clip==="true")div.style.overflow="hidden";
-      if(e.rotation!==undefined) {
-        var rot = "rotate(" + e.rotation + "deg)";
-        div.style.webkitTransform=rot;
-        div.style.MozTransform=rot;
-        div.style.oTransform=rot;
-        div.style.transform=rot;
-      }
-      if(e.scale!==undefined) {
-        var scale = "scale(" + e.scale + ")";
-        div.style.webkitTransform+=scale;
-        div.style.MozTransform+=scale;
-        div.style.oTransform+=scale;
-        div.style.transform+=scale;
-      }
-    });
-    var p = convert_to_page(i, div);
-    return div;   
-  },
 
-  rectangle: function(i) {
-    var div = qml_convert.item(i);
-    i.map(function(e) {
-      if(e.color!==undefined) div.style.backgroundColor = e.color;
-      if(e['border.color']!==undefined) div.style.borderColor = e['border.color'];
-      if(e['border.width']!==undefined){
-        div.style.borderWidth = e['border.width'] + "px";
-        div.style.borderStyle="solid";
-      }
-      if(e.radius!==undefined) div.style.borderRadius = e.radius + "px";
-      if(e.gradient!==undefined) {
-        var grad = [];
-        e.gradient.Gradient.map(function(gs) {
-          gradient_stop = {color: "", position:0}
-          gs.GradientStop.map(function(e) {
-            if(e.position!==undefined) gradient_stop.position = e.position
-            if(e.color!==undefined) gradient_stop.color = e.color
-          });
-          grad.push(gradient_stop.color + " " + gradient_stop.position * 100 + "%");
+function rectangle(json, parent, ctx) {
+  ctx = ctx || this;
+  ctx.base = new item(json, parent, this);
+  ctx.color = "'white'";
+  ctx.border = {
+    color:"'white'",
+    width:0
+  }
+
+  ctx.radius = 0;
+  ctx.gradient = null;
+
+  json.map(function(e) {
+    if(e.color!==undefined) _f(ctx, "color", e.color);
+    if(e['border.color']!==undefined) _f(ctx.border, "color", e['border.color']);
+    if(e['border.width']!==undefined) _f(ctx.border, "width", e['border.width']);
+    if(e.radius!==undefined) _f(ctx, "radius", e.radius);
+    if(e.gradient!==undefined) {ctx.gradient = e.gradient;
+      ctx.gradient.Gradient.map(function(gs) {
+        gs.GradientStop.map(function(e) {
+          if(e.position!==undefined) _f(e, "position", e.position);
+          if(e.color!==undefined) _f(e, "color", e.color);
         });
-        div.style.backgroundImage = "linear-gradient(top, " + grad.join(",") + ")";
-        div.style.backgroundImage = "-o-linear-gradient(top, " + grad.join(",") + ")";
-        div.style.backgroundImage = "-moz-linear-gradient(top, " + grad.join(",") + ")";
-        div.style.backgroundImage = "-webkit-linear-gradient(top, " + grad.join(",") + ")";
-        div.style.backgroundImage = "-ms-linear-gradient(top, " + grad.join(",") + ")";
-      }
-    })
+      });
+    }
+  });
+  this.html = function(ctx) {
+    if (!ctx) var ctx = this;
+    var div = ctx.base.html(ctx);
+    div.style.backgroundColor = ctx.color, ctx.id, "color";
+    div.style.borderColor = ctx.border.color;
+    if (ctx.border.width > 0) {
+      div.style.borderWidth = ctx.border.width+ "px";
+      div.style.borderStyle = "solid";
+    }
+    div.style.borderRadius = ctx.radius + "px";
+    if(ctx.gradient!==null) {
+      var grad = [];
+      ctx.gradient.Gradient.map(function(gs) {
+        gradient_stop = {color: "", position:0}
+        gs.GradientStop.map(function(e) {
+          if(e.position!==undefined) gradient_stop.position = e.position;
+          if(e.color!==undefined) gradient_stop.color = e.color;
+        });
+        grad.push(gradient_stop.color + " " + gradient_stop.position * 100 + "%");
+      });
+      div.style.backgroundImage = "linear-gradient(top, " + grad.join(",") + ")";
+      div.style.backgroundImage = "-o-linear-gradient(top, " + grad.join(",") + ")";
+      div.style.backgroundImage = "-moz-linear-gradient(top, " + grad.join(",") + ")";
+      div.style.backgroundImage = "-webkit-linear-gradient(top, " + grad.join(",") + ")";
+      div.style.backgroundImage = "-ms-linear-gradient(top, " + grad.join(",") + ")";
+    }
     return div;
-  },
+  }
+}
+function image(json, parent, ctx) {
+  ctx = ctx || this;
+  ctx.base = new item(json, parent, this);
+  ctx.source="";
+  ctx.mirror = false;
+  ctx.Image = {PreserveAspectFit:0, PreserveAspectCrop:1}
+  ctx.fillMode = Image.PreserveAspectFit;
 
-  image: function(i) {
-    var img = qml_convert.item(i);
-    i.map(function(e) {
-      if(e.source!==undefined) img.style.backgroundImage = "url(" + e.source + ")";
-      if(e.mirror==="true") {
-        img.style.webkitTransform = "scale(-1, 1)";
-        img.style.MozTransform = "scale(-1, 1)";
-        img.style.oTransform = "scale(-1, 1)";
-        img.style.msTransform = "scale(-1, 1)";
-        img.style.transform = "scale(-1, 1)";
-      }
-      switch(e.fillMode) {
-        case "Image.PreserveAspectFit":
-          img.style.backgroundSize = "contain";
-          img.style.backgroundRepeat = "no-repeat";
-          break;
-        case "Image.PreserveAspectCrop":
-          img.style.backgroundSize = "cover";
-          break;
-        default:
-          img.style.backgroundSize = "100% 100%";
-      }
-      
-    });
-    return img;
-  },
+  json.map(function(e) {
+    if(e.source!==undefined) _f(ctx, "source", e.source);
+    if(e.mirror!==undefined) _f(ctx, "mirror", e.mirror);
+    if(e.fillMode!==undefined) _f(ctx, "fillMode", e.fillMode);     
+  });
 
-  text: function(t) {
-    var text = qml_convert.item(t);
-    t.map(function(e) {
-      if(e.text!==undefined) text.innerHTML = e.text;
+  this.html = function(ctx) {
+    if (!ctx) var ctx = this;
+    var div = ctx.base.html(ctx);
+    div.style.backgroundImage = "url(" + ctx.source + ")";
+    if(ctx.mirror) {
+        div.style.webkitTransform = "scale(-1, 1)";
+        div.style.MozTransform = "scale(-1, 1)";
+        div.style.oTransform = "scale(-1, 1)";
+        div.style.msTransform = "scale(-1, 1)";
+        div.style.transform = "scale(-1, 1)";
+    }
+    switch(ctx.fillMode.PreserveAspectFit) {
+      case ctx.Image.PreserveAspectFit:
+        div.style.backgroundSize = "contain";
+        div.style.backgroundRepeat = "no-repeat";
+        break;
+      case ctx.Image.PreserveAspectCrop:
+        div.style.backgroundSize = "cover";
+        break;
+      default:
+        div.style.backgroundSize = "100% 100%";
+    }
+    return div;
+  }
+}
 
-      if(e.color!==undefined) text.style.color=e.color;
+function text(json, parent, ctx)
+{
+  ctx = ctx || this;
+  ctx.base = new item(json, parent, this);
+  ctx.text = "";
+  ctx.color = "black";
 
-      if(e["font.bold"] ==="true") text.style.fontWeight="bold";
-      if(e["font.italic"]!==undefined) text.style.fontStyle="italic";
-      if(e["font.pixelSize"]!==undefined) text.style.fontSize+=e["font.pixelSize"] + "px";
-      if(e["font.pointSize"]!==undefined) text.style.fontSize+=e["font.pointSize"] + "pt";
-      if(e["font.family"]!==undefined) text.style.fontFamily = e["font.family"];
-      if(e["font.underline"]==="true") text.style.textDecoration+=" underline";
-      if(e["font.strikeout"]==="true") text.style.textDecoration+=" line-through";
-      if(e["font.letterSpacing"]!==undefined) text.style.letterSpacing = e["font.letterspacing"] + "px";
-      if(e["font.wordSpacing"]!==undefined) text.style.wordSpacing = e["font.wordspacing"] + "px";
-      switch(e['font.capitalization']) {
-        case "Font.AllUppercase":
+  ctx.Font = {
+    MixedCase:0,
+    AllUppercase:1,
+    AllLowercase:2,
+    SmallCaps:3,
+    Capitalize:4,
+
+    Light:5,
+    DemiBold:6,
+    Bold:7,
+    Black:8
+  }
+  ctx.font = {
+    bold:false,
+    italic:false,
+    pixelSize:12,
+    pointSize:1.0,
+    family: "Arial",
+    underline:false,
+    strikeout:false,
+    letterSpacing:2,
+    wordSpacing:2,
+    capitalization:ctx.Font.MixedCase,
+    weight:ctx.Font.Normal
+  }
+
+  json.map(function(e) {
+    if(e.text!==undefined) _f(ctx, "text", e.text);
+    if(e.color!==undefined) _f(ctx, "color", e.color);
+    if(e["font.bold"]!==undefined) _f(ctx.font, "bold", e["font.bold"]);;
+    if(e["font.italic"]!==undefined) _f(ctx.font, "color", e["font.italic"]);
+    if(e["font.pixelSize"]!==undefined) _f(ctx.font, "pixelSize", e["font.pixelSize"]);     
+    if(e.pointSize!==undefined) _f(ctx.font, "pointSize", e["font.pointSize"]);     
+    if(e["font.family"]!==undefined) _f(ctx.font, "family", e["font.family"]);     
+    if(e["font.underline"]!==undefined) _f(ctx.font, "underline", e["font.underline"]);     
+    if(e["font.strikeout"]!==undefined) _f(ctx.font, "strikeout", e["font.strikeout"]);     
+    if(e["font.letterSpacing"]!==undefined) _f(ctx.font, "letterSpacing", e["font.letterSpacing"]);     
+    if(e["font.wordSpacing"]!==undefined) _f(ctx.font, "wordSpacing", e["font.wordSpacing"]);     
+    if(e['font.capitalization']) _f(ctx.Font, "capitalization", e['font.capitalization']);     
+    if(e["font.weight"]!==undefined) _f(ctx.Font, "weight", e["font.weight"]);     
+  });
+
+  this.html = function(ctx) {
+    ctx = ctx || this;
+    var div = this.base.html(ctx);
+    div.innerHTML = ctx.text;
+    div.style.color = ctx.color;
+    if(ctx.font.bold) div.style.fontWeight="bold";
+    if(ctx.font.italic) div.style.fontStyle="italic";
+    div.style.fontSize+=ctx.font.pixelSize + "px";
+    div.style.fontSize+= ctx.font.pointSize + "pt";
+    div.style.fontFamily = ctx.font.family;
+    if (ctx.font.underline) div.style.textDecoration+=" underline";
+    if (ctx.font.strikeout) div.style.textDecoration+=" line-through";
+    div.style.letterSpacing = ctx.font.letterSpacing + "px";
+    div.style.wordSpacing = ctx.font.wordSpacing + "px";
+    switch(ctx.font.capitalization) {
+        case ctx.Font.AllUppercase:
           text.style.textTransform = "uppercase";
           break;
-        case "Font.AllLowercase":
+        case ctx.Font.AllLowercase:
           text.style.textTransform = "lowercase";
           break;
-        case "Font.SmallCaps":
+        case ctx.Font.SmallCaps:
           text.style.fontVariant = "small-caps"
           break;
-        case "Font.Capitalize":
+        case ctx.Font.Capitalize:
           text.style.textTransform = "capitalize"; 
           break;  
       }
-      switch(e['font.weight']) {
-          case "Font.Light":
-            text.style.fontWeight = "lighter";
-            break;
-          case "Font.DemiBold":
-            text.style.fontWeight = "bolder";
-            break;
-          case "Font.Bold":
-            text.style.fontWeight = "bold";
-            break;
-          case "Font.Black":
-            text.style.fontWeight = "900";
-            break;
-      }
-      switch(e['horizontalAlignment']) {
-          case "Text.AlignLeft":
-            text.style.textAlign = "left";
-            break;
-          case "Text.AlignRight":
-            text.style.textAlign = "right";
-            break;
-          case "Text.AlignHCenter":
-            text.style.textAlign = "center";
-            break;
-          case "Text.AlignJustify":
-            text.style.textAlign = "justify";
-            break;
-      }
-      switch(e['verticalAlignment']) {
-          case "Text.Text.AlignTop":
-            text.style.verticalAlign = "text-top";
-            break;
-          case "Text.Text.AlignBottom":
-            text.style.textAlign = "text-bottom";
-            break;
-          case "Text.AlignVCenter":
-            text.style.textAlign = "middle";
-            break;
-      }
-    });
-    return text;
-  },
-  mouse_area: function(m) {
-    var mouse = qml_convert.item(m);
-    m.map(function(e) {
-      
-    });
+    return div;
   }
 }
-
-function convert_to_page(json, e) {
+var global_id = 0;
+function load_qml(json, parent) {
+  var p = [];
   json.map(function(j) {
-    if(j.Item) e.appendChild(qml_convert.item(j.Item));
-    if(j.Rectangle) e.appendChild(qml_convert.rectangle(j.Rectangle));
-    if(j.Image) e.appendChild(qml_convert.image(j.Image));
-    if(j.Text) e.appendChild(qml_convert.text(j.Text));
-    if(j.MouseArea) e.appendChild(qml_convert.mouse_area(j.Text));
+    if(j.Item) p.push(new item(j.Item, parent));
+    if(j.Rectangle) p.push(new rectangle(j.Rectangle, parent));
+    if(j.Image) p.push(new image(j.Image, parent));
+    if(j.Text) p.push(new text(j.Text, parent));
   });
+  return p;
+}
+
+function convert_to_page(json, e, parent) {
+  var p = load_qml(json, parent);
+  p.map(function(h) {
+    e.appendChild(h.html());
+  });
+  e.style.position = "relative";
   return e;
 }
 
