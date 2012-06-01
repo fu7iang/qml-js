@@ -6,16 +6,23 @@ Written by Daniël Heres 2012
 */
 function _f(ctx, prop, expression) {
   ctx.__defineGetter__(prop, new Function("return " + expression));
-  ctx.__defineSetter__(prop, function() {
-    subscribers.map(function(s) {
-       s[i]();
+  ctx["set" +prop] = function(from, val) {
+    var v = prop;
+    v[0] = v.charAt(0).toUpperCase();
+    console.log("on" + v + "Changed");
+    if (ctx["on" + v + "Changed"] !== undefined) ctx["on" + v + "Changed"]();
+    if(ctx.subscribers.indexOf(from) === -1) ctx.subscribers.push(from);
+    ctx[prop] = val;
+    ctx.subscribers.map(function(s) {
+       //s();
     });
-  });
+  }
 }
 
 function item(json, parent, ctx) {
   ctx.id = ""
   ctx.x = 0;
+  ctx.onXChanged = function() {console.log("x changed")}
   ctx.y = 0;
   ctx.z = 0;
   ctx.height = 0;
@@ -27,8 +34,13 @@ function item(json, parent, ctx) {
   ctx.scale = 1;
   ctx.children = [];
   ctx.parent = parent;
+  ctx.subscribers = [];
+  ctx.anchors = {
+    fill:null,
+    parent:ctx.parent
+  }
   json.map(function(e) {
-    if(e.id!==undefined) e.id;
+    if(e.id!==undefined) ctx.id = e.id;
     if(e.width!==undefined) _f(ctx, "width", e.width);
     if(e.height!==undefined) _f(ctx, "height", e.height);
     if(e.x!==undefined) _f(ctx, "x", e.x);
@@ -40,17 +52,23 @@ function item(json, parent, ctx) {
     if(e.clip!==undefined) _f(ctx, "clip", e.clip);
     if(e.rotation!==undefined) _f(ctx, "rotation", e.rotation);
     if(e.scale!==undefined) _f(ctx, "scale", e.scale);
+    if(e["anchors.fill"]!==undefined) _f(ctx.anchors, "fill", e["anchors.fill"]);
   });
   //create new id if it doesn't exist
-  if(ctx.id===undefined) ctx.id = global_id++ + "qmljs";
-
+  if(ctx.id==="") ctx.id = global_id++ + "qmljs";
   this.children = load_qml(json, ctx || this);
 
-
-  this.html = function(ctx) {
+  this.html = function(ctx, e) {
      ctx = ctx || this;
      var div = document.createElement("div");
+     div.id = ctx.id;
      div.style.position = "absolute";
+     if(ctx.anchors.fill!==null) {
+        ctx.width = ctx.anchors.fill.width;
+        ctx.height = ctx.anchors.fill.height;
+        ctx.x = ctx.anchors.fill.x;
+        ctx.y = ctx.anchors.fill.y;
+     }
      div.style.width=ctx.width
      div.style.height=ctx.height
      div.style.left=ctx.x
@@ -70,8 +88,9 @@ function item(json, parent, ctx) {
      div.style.MozTransform+=scale
      div.style.oTransform+=scale;
      div.style.transform+=scale;
+     
      this.children.map(function(h) {
-      div.appendChild(h.html());
+      e.appendChild(h.html(null, e));
      });
      return div;
   }
@@ -104,10 +123,11 @@ function rectangle(json, parent, ctx) {
         });
       });
     }
+   if(e.function!==undefined) {}
   });
-  this.html = function(ctx) {
+  this.html = function(ctx, e) {
     if (!ctx) var ctx = this;
-    var div = ctx.base.html(ctx);
+    var div = ctx.base.html(ctx, e);
     div.style.backgroundColor = ctx.color, ctx.id, "color";
     div.style.borderColor = ctx.border.color;
     if (ctx.border.width > 0) {
@@ -148,9 +168,9 @@ function image(json, parent, ctx) {
     if(e.fillMode!==undefined) _f(ctx, "fillMode", e.fillMode);     
   });
 
-  this.html = function(ctx) {
+  this.html = function(ctx, e) {
     if (!ctx) var ctx = this;
-    var div = ctx.base.html(ctx);
+    var div = ctx.base.html(ctx, e);
     div.style.backgroundImage = "url(" + ctx.source + ")";
     if(ctx.mirror) {
         div.style.webkitTransform = "scale(-1, 1)";
@@ -196,7 +216,10 @@ function text(json, parent, ctx)
   }
   ctx.Text = {
     AlignLeft:0, AlignRight:1,
-    AlignHCenter:2, AlignJustify:3, parent:ctx.parent
+    AlignHCenter:2, AlignJustify:3,
+ 
+    AlignTop:4, AlignVCenter:5, AlignBottom:6,
+    parent:ctx.parent
   }
   ctx.font = {
     Font:ctx.Font,
@@ -214,6 +237,7 @@ function text(json, parent, ctx)
     parent:ctx.parent,
   }
   ctx.horizontalAlignment=Text.AlignLeft;
+  ctx.verticalAlignment=Text.AlignTop;
 
   json.map(function(e) {
     if(e.text!==undefined) _f(ctx, "text", e.text);
@@ -229,13 +253,14 @@ function text(json, parent, ctx)
     if(e["font.wordSpacing"]!==undefined) _f(ctx.font, "wordSpacing", e["font.wordSpacing"]);     
     if(e['font.capitalization']) _f(ctx.font, "capitalization", e['font.capitalization']);     
     if(e["font.weight"]!==undefined) _f(ctx.Font, "weight", e["font.weight"]);     
-    if(e["horizontalAlignment"]!==undefined) _f(ctx, "horizontalAlignment", e["horizontalAlignment"]);     
+    if(e["horizontalAlignment"]!==undefined) _f(ctx, "horizontalAlignment", e["horizontalAlignment"]);
+    if(e["verticalAlignment"]!==undefined) _f(ctx, "verticalAlignment", e["verticalAlignment"]);     
   });
 
-  this.html = function(ctx) {
+  this.html = function(ctx, e) {
     ctx = ctx || this;
-    var div = this.base.html(ctx);
-    div.innerHTML = ctx.text;
+    var div = this.base.html(ctx, e);
+    div.innerHTML = '<div>' + ctx.text + '<div>';
     div.style.color = ctx.color;
     if(ctx.font.bold) div.style.fontWeight="bold";
     if(ctx.font.italic) div.style.fontStyle="italic";
@@ -273,7 +298,20 @@ function text(json, parent, ctx)
       case ctx.Text.AlignJustify:
         div.style.textAlign = "justify";
         break;
-      }
+    }
+    switch(ctx.verticalAlignment) {
+      case ctx.Text.AlignTop: 
+        div.style.verticalAlign = "text-top";
+        break;
+      case ctx.Text.AlignBottom:
+        div.style.verticalAlign = "text-bottom";
+        break;
+      case ctx.Text.AlignVCenter:
+         console.log(window.getComputedStyle(div.childNodes[0]).getPropertyValue("height"))
+         div.style.paddingTop = 0.5*ctx.height - 5;
+         break;
+    }
+
 
     return div;
   }
@@ -293,7 +331,7 @@ function load_qml(json, parent) {
 function convert_to_page(json, e, parent) {
   var p = load_qml(json, parent);
   p.map(function(h) {
-    e.appendChild(h.html());
+    e.appendChild(h.html(h, e));
   });
   e.style.position = "relative";
   return e;

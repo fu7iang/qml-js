@@ -79,12 +79,18 @@ multiplicative "multiplicative" =
   left:primary spaces op:("*"/"/") spaces right:multiplicative { return left +  op + right; }
  /primary
 
+svar "svar" =
+  v:alphanumeric  p:(x:("." alphanumeric) {return x.join("")})* {return {args: "this." + v+ p.slice(0, p.length), last: p[p.length-1].substring(1)}
+}
+
+
 primary "primary"
  = floating
   /boolean
   /string
   /integer
   /functioncall
+  / v:svar spaces "=" spaces p:primary {return v.args+".set" + v.last + "(ctx," + p + ")"}
   / "(" additive:additive ")" { return "(" + additive + ")"; }
   / v:expvar {return v}
 
