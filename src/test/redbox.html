@@ -17,14 +17,14 @@ Rectangle {
   border.width:5
   radius:20;
   Rectangle {
-    width:120
+    width:parent.width/2
     height : parent.height /2;
     color:"orange";
-    x:40;
-    y:20;
+    x:parent.width /4;
+    y:parent.height /4;
     border.color:"white"
     border.width: parent.border.width
-    radius:25;
+    radius:parent.radius;
     opacity:1-0.4/(2/1)
     z:1
     Text
@@ -62,8 +62,22 @@ Rectangle {
     z:0
     radius:5
     gradient: Gradient{
-      GradientStop { position:0.0; color:"red"}
+      GradientStop { position:0.0; color:parent.color}
       GradientStop { position:1.0; color:"green"}
+    }
+  }
+  Rectangle {
+    width:40;
+    height : 40;
+    x:260;
+    y:80;
+    rotation: 60
+    scale:4
+    z:3
+    radius:5
+    gradient: Gradient{
+      GradientStop { position:0.0; color:parent.color}
+      GradientStop { position:1.0; color:"rgba(100,100,100,0.5)"}
     }
   }
   Rectangle {

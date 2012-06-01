@@ -6,6 +6,11 @@ Written by Daniël Heres 2012
 */
 function _f(ctx, prop, expression) {
   ctx.__defineGetter__(prop, new Function("return " + expression));
+  ctx.__defineSetter__(prop, function() {
+    subscribers.map(function(s) {
+       s[i]();
+    });
+  });
 }
 
 function item(json, parent, ctx) {
@@ -75,9 +80,9 @@ function item(json, parent, ctx) {
 function rectangle(json, parent, ctx) {
   ctx = ctx || this;
   ctx.base = new item(json, parent, this);
-  ctx.color = "'white'";
+  ctx.color = "transparent";
   ctx.border = {
-    color:"'white'",
+    color:"white",
     width:0,
     parent:ctx.parent
   }
@@ -95,6 +100,7 @@ function rectangle(json, parent, ctx) {
         gs.GradientStop.map(function(e) {
           if(e.position!==undefined) _f(e, "position", e.position);
           if(e.color!==undefined) _f(e, "color", e.color);
+          e.parent = ctx.parent;
         });
       });
     }
@@ -188,6 +194,10 @@ function text(json, parent, ctx)
     Black:8,
     parent:ctx.parent,
   }
+  ctx.Text = {
+    AlignLeft:0, AlignRight:1,
+    AlignHCenter:2, AlignJustify:3, parent:ctx.parent
+  }
   ctx.font = {
     bold:false,
     italic:false,
@@ -202,6 +212,7 @@ function text(json, parent, ctx)
     weight:ctx.Font.Normal,
     parent:ctx.parent,
   }
+  ctx.horizontalAlignment=Text.AlignLeft;
 
   json.map(function(e) {
     if(e.text!==undefined) _f(ctx, "text", e.text);
@@ -217,6 +228,7 @@ function text(json, parent, ctx)
     if(e["font.wordSpacing"]!==undefined) _f(ctx.font, "wordSpacing", e["font.wordSpacing"]);     
     if(e['font.capitalization']) _f(ctx.Font, "capitalization", e['font.capitalization']);     
     if(e["font.weight"]!==undefined) _f(ctx.Font, "weight", e["font.weight"]);     
+    if(e["horizontalAlignment"]!==undefined) _f(ctx, "horizontalAlignment", e["horizontalAlignment"]);     
   });
 
   this.html = function(ctx) {
@@ -235,18 +247,33 @@ function text(json, parent, ctx)
     div.style.wordSpacing = ctx.font.wordSpacing + "px";
     switch(ctx.font.capitalization) {
         case ctx.Font.AllUppercase:
-          text.style.textTransform = "uppercase";
+          div.style.textTransform = "uppercase";
           break;
         case ctx.Font.AllLowercase:
-          text.style.textTransform = "lowercase";
+          div.style.textTransform = "lowercase";
           break;
         case ctx.Font.SmallCaps:
-          text.style.fontVariant = "small-caps"
+          div.style.fontVariant = "small-caps"
           break;
         case ctx.Font.Capitalize:
-          text.style.textTransform = "capitalize"; 
+          div.style.textTransform = "capitalize"; 
           break;  
     }
+    switch(ctx.horizontalAlignment) {
+      case ctx.Text.AlignLeft:
+        div.style.textAlign = "left";
+        break;
+      case ctx.Text.AlignRight:
+        div.style.textAlign = "right";
+        break;
+      case ctx.Text.AlignHCenter:
+        div.style.textAlign = "center";
+        break;
+      case ctx.Text.AlignJustify:
+        div.style.textAlign = "justify";
+        break;
+      }
+
     return div;
   }
 }
