@@ -78,7 +78,8 @@ function rectangle(json, parent, ctx) {
   ctx.color = "'white'";
   ctx.border = {
     color:"'white'",
-    width:0
+    width:0,
+    parent:ctx.parent
   }
 
   ctx.radius = 0;
@@ -132,7 +133,7 @@ function image(json, parent, ctx) {
   ctx.base = new item(json, parent, this);
   ctx.source="";
   ctx.mirror = false;
-  ctx.Image = {PreserveAspectFit:0, PreserveAspectCrop:1}
+  ctx.Image = {PreserveAspectFit:0, PreserveAspectCrop:1, parent:ctx.parent,}
   ctx.fillMode = Image.PreserveAspectFit;
 
   json.map(function(e) {
@@ -184,7 +185,8 @@ function text(json, parent, ctx)
     Light:5,
     DemiBold:6,
     Bold:7,
-    Black:8
+    Black:8,
+    parent:ctx.parent,
   }
   ctx.font = {
     bold:false,
@@ -197,7 +199,8 @@ function text(json, parent, ctx)
     letterSpacing:2,
     wordSpacing:2,
     capitalization:ctx.Font.MixedCase,
-    weight:ctx.Font.Normal
+    weight:ctx.Font.Normal,
+    parent:ctx.parent,
   }
 
   json.map(function(e) {
@@ -206,7 +209,7 @@ function text(json, parent, ctx)
     if(e["font.bold"]!==undefined) _f(ctx.font, "bold", e["font.bold"]);;
     if(e["font.italic"]!==undefined) _f(ctx.font, "color", e["font.italic"]);
     if(e["font.pixelSize"]!==undefined) _f(ctx.font, "pixelSize", e["font.pixelSize"]);     
-    if(e.pointSize!==undefined) _f(ctx.font, "pointSize", e["font.pointSize"]);     
+    if(e["font.pointSize"]!==undefined) _f(ctx.font, "pointSize", e["font.pointSize"]);     
     if(e["font.family"]!==undefined) _f(ctx.font, "family", e["font.family"]);     
     if(e["font.underline"]!==undefined) _f(ctx.font, "underline", e["font.underline"]);     
     if(e["font.strikeout"]!==undefined) _f(ctx.font, "strikeout", e["font.strikeout"]);     
@@ -243,7 +246,7 @@ function text(json, parent, ctx)
         case ctx.Font.Capitalize:
           text.style.textTransform = "capitalize"; 
           break;  
-      }
+    }
     return div;
   }
 }
