@@ -199,6 +199,7 @@ function text(json, parent, ctx)
     AlignHCenter:2, AlignJustify:3, parent:ctx.parent
   }
   ctx.font = {
+    Font:ctx.Font,
     bold:false,
     italic:false,
     pixelSize:12,
@@ -226,7 +227,7 @@ function text(json, parent, ctx)
     if(e["font.strikeout"]!==undefined) _f(ctx.font, "strikeout", e["font.strikeout"]);     
     if(e["font.letterSpacing"]!==undefined) _f(ctx.font, "letterSpacing", e["font.letterSpacing"]);     
     if(e["font.wordSpacing"]!==undefined) _f(ctx.font, "wordSpacing", e["font.wordSpacing"]);     
-    if(e['font.capitalization']) _f(ctx.Font, "capitalization", e['font.capitalization']);     
+    if(e['font.capitalization']) _f(ctx.font, "capitalization", e['font.capitalization']);     
     if(e["font.weight"]!==undefined) _f(ctx.Font, "weight", e["font.weight"]);     
     if(e["horizontalAlignment"]!==undefined) _f(ctx, "horizontalAlignment", e["horizontalAlignment"]);     
   });
