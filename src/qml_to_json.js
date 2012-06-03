@@ -69,7 +69,8 @@ string "string" =
   '"' v:('\\"' / [^"\""])+ '"' {return "'" + v.join("") + "'"}
 
 functioncall "functioncall" = 
-   v:expvar "(" spaces a:( l:(spaces x:primary spaces "," {return "," + x})* spaces m:primary {return l.join(",") + m} )? spaces ")" {return v + "(" + a + ")"}
+   v:svar "(" spaces a:( l:(spaces x:primary spaces "," {return "," + x})* spaces m:primary {return l.join(",") + m} )? spaces ")" {
+return v.all + "(" + a + ")"}
 
 additive "additive" =
   left:multiplicative spaces op:("+"/"-") spaces right:additive { return left + op + right; }
@@ -80,8 +81,7 @@ multiplicative "multiplicative" =
  /primary
 
 svar "svar" =
-  v:alphanumeric  p:(x:("." alphanumeric) {return x.join("")})* {return {args: "this." + v+ p.slice(0, p.length), last: p[p.length-1].substring(1)}
-}
+  p:(a:alphanumeric "."? {return a})*  {return {args: p.slice(0, p.length-1).join("."), last:p[p.length-1], all: p.join(".")}}
 
 
 primary "primary"
@@ -90,7 +90,7 @@ primary "primary"
   /string
   /integer
   /functioncall
-  / v:svar spaces "=" spaces p:primary {return v.args+".set" + v.last + "(ctx," + p + ")"}
+  / v:svar spaces "=" spaces p:primary {return "this." + v.args+".set" + v.last + "(ctx," + p + ")"}
   / "(" additive:additive ")" { return "(" + additive + ")"; }
   / v:expvar {return v}
 

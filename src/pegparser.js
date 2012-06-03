@@ -58,6 +58,7 @@ qmlparser = (function(){
         "functioncall": parse_functioncall,
         "additive": parse_additive,
         "multiplicative": parse_multiplicative,
+        "svar": parse_svar,
         "primary": parse_primary,
         "expression": parse_expression,
         "boolean": parse_boolean
@@ -1393,7 +1394,7 @@ qmlparser = (function(){
         reportFailures++;
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_expvar();
+        result0 = parse_svar();
         if (result0 !== null) {
           if (input.charCodeAt(pos) === 40) {
             result1 = "(";
@@ -1559,7 +1560,8 @@ qmlparser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v, a) {return v + "(" + a + ")"})(pos0, result0[0], result0[3]);
+          result0 = (function(offset, v, a) {
+        return v.all + "(" + a + ")"})(pos0, result0[0], result0[3]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -1717,8 +1719,91 @@ qmlparser = (function(){
         return result0;
       }
       
-      function parse_primary() {
+      function parse_svar() {
         var result0, result1, result2;
+        var pos0, pos1, pos2;
+        
+        reportFailures++;
+        pos0 = pos;
+        result0 = [];
+        pos1 = pos;
+        pos2 = pos;
+        result1 = parse_alphanumeric();
+        if (result1 !== null) {
+          if (input.charCodeAt(pos) === 46) {
+            result2 = ".";
+            pos++;
+          } else {
+            result2 = null;
+            if (reportFailures === 0) {
+              matchFailed("\".\"");
+            }
+          }
+          result2 = result2 !== null ? result2 : "";
+          if (result2 !== null) {
+            result1 = [result1, result2];
+          } else {
+            result1 = null;
+            pos = pos2;
+          }
+        } else {
+          result1 = null;
+          pos = pos2;
+        }
+        if (result1 !== null) {
+          result1 = (function(offset, a) {return a})(pos1, result1[0]);
+        }
+        if (result1 === null) {
+          pos = pos1;
+        }
+        while (result1 !== null) {
+          result0.push(result1);
+          pos1 = pos;
+          pos2 = pos;
+          result1 = parse_alphanumeric();
+          if (result1 !== null) {
+            if (input.charCodeAt(pos) === 46) {
+              result2 = ".";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\".\"");
+              }
+            }
+            result2 = result2 !== null ? result2 : "";
+            if (result2 !== null) {
+              result1 = [result1, result2];
+            } else {
+              result1 = null;
+              pos = pos2;
+            }
+          } else {
+            result1 = null;
+            pos = pos2;
+          }
+          if (result1 !== null) {
+            result1 = (function(offset, a) {return a})(pos1, result1[0]);
+          }
+          if (result1 === null) {
+            pos = pos1;
+          }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, p) {return {args: p.slice(0, p.length-1).join("."), last:p[p.length-1], all: p.join(".")}})(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        reportFailures--;
+        if (reportFailures === 0 && result0 === null) {
+          matchFailed("svar");
+        }
+        return result0;
+      }
+      
+      function parse_primary() {
+        var result0, result1, result2, result3, result4;
         var pos0, pos1;
         
         reportFailures++;
@@ -1734,29 +1819,33 @@ qmlparser = (function(){
                 if (result0 === null) {
                   pos0 = pos;
                   pos1 = pos;
-                  if (input.charCodeAt(pos) === 40) {
-                    result0 = "(";
-                    pos++;
-                  } else {
-                    result0 = null;
-                    if (reportFailures === 0) {
-                      matchFailed("\"(\"");
-                    }
-                  }
+                  result0 = parse_svar();
                   if (result0 !== null) {
-                    result1 = parse_additive();
+                    result1 = parse_spaces();
                     if (result1 !== null) {
-                      if (input.charCodeAt(pos) === 41) {
-                        result2 = ")";
+                      if (input.charCodeAt(pos) === 61) {
+                        result2 = "=";
                         pos++;
                       } else {
                         result2 = null;
                         if (reportFailures === 0) {
-                          matchFailed("\")\"");
+                          matchFailed("\"=\"");
                         }
                       }
                       if (result2 !== null) {
-                        result0 = [result0, result1, result2];
+                        result3 = parse_spaces();
+                        if (result3 !== null) {
+                          result4 = parse_primary();
+                          if (result4 !== null) {
+                            result0 = [result0, result1, result2, result3, result4];
+                          } else {
+                            result0 = null;
+                            pos = pos1;
+                          }
+                        } else {
+                          result0 = null;
+                          pos = pos1;
+                        }
                       } else {
                         result0 = null;
                         pos = pos1;
@@ -1770,19 +1859,64 @@ qmlparser = (function(){
                     pos = pos1;
                   }
                   if (result0 !== null) {
-                    result0 = (function(offset, additive) { return "(" + additive + ")"; })(pos0, result0[1]);
+                    result0 = (function(offset, v, p) {return "this." + v.args+".set" + v.last + "(ctx," + p + ")"})(pos0, result0[0], result0[4]);
                   }
                   if (result0 === null) {
                     pos = pos0;
                   }
                   if (result0 === null) {
                     pos0 = pos;
-                    result0 = parse_expvar();
+                    pos1 = pos;
+                    if (input.charCodeAt(pos) === 40) {
+                      result0 = "(";
+                      pos++;
+                    } else {
+                      result0 = null;
+                      if (reportFailures === 0) {
+                        matchFailed("\"(\"");
+                      }
+                    }
                     if (result0 !== null) {
-                      result0 = (function(offset, v) {return v})(pos0, result0);
+                      result1 = parse_additive();
+                      if (result1 !== null) {
+                        if (input.charCodeAt(pos) === 41) {
+                          result2 = ")";
+                          pos++;
+                        } else {
+                          result2 = null;
+                          if (reportFailures === 0) {
+                            matchFailed("\")\"");
+                          }
+                        }
+                        if (result2 !== null) {
+                          result0 = [result0, result1, result2];
+                        } else {
+                          result0 = null;
+                          pos = pos1;
+                        }
+                      } else {
+                        result0 = null;
+                        pos = pos1;
+                      }
+                    } else {
+                      result0 = null;
+                      pos = pos1;
+                    }
+                    if (result0 !== null) {
+                      result0 = (function(offset, additive) { return "(" + additive + ")"; })(pos0, result0[1]);
                     }
                     if (result0 === null) {
                       pos = pos0;
+                    }
+                    if (result0 === null) {
+                      pos0 = pos;
+                      result0 = parse_expvar();
+                      if (result0 !== null) {
+                        result0 = (function(offset, v) {return v})(pos0, result0);
+                      }
+                      if (result0 === null) {
+                        pos = pos0;
+                      }
                     }
                   }
                 }

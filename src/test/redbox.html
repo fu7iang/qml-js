@@ -25,6 +25,12 @@ Rectangle {
      GradientStop { position:0.0; color:"darkred"}
       GradientStop { position:1.0; color:"red"}
    }
+   MouseArea {
+     id:mouse
+     anchors.fill:parent
+     onClicked:{alert("click!")}
+     z:100
+   }
 
    border.color:"white"
     border.width: parent.border.width

@@ -5,11 +5,11 @@ Written by Daniël Heres 2012
 
 */
 function _f(ctx, prop, expression) {
+  delete ctx[prop]
   ctx.__defineGetter__(prop, new Function("return " + expression));
   ctx["set" +prop] = function(from, val) {
     var v = prop;
     v[0] = v.charAt(0).toUpperCase();
-    console.log("on" + v + "Changed");
     if (ctx["on" + v + "Changed"] !== undefined) ctx["on" + v + "Changed"]();
     if(ctx.subscribers.indexOf(from) === -1) ctx.subscribers.push(from);
     ctx[prop] = val;
@@ -22,10 +22,10 @@ function _f(ctx, prop, expression) {
 function item(json, parent, ctx) {
   ctx.id = ""
   ctx.x = 0;
-  ctx.onXChanged = function() {console.log("x changed")}
   ctx.y = 0;
   ctx.z = 0;
-  ctx.height = 0;
+  ctx.width = _f(ctx, "width", 0);
+  ctx.height = _f(ctx, "height", 0);
   ctx.opacity = 1;
   ctx.visible = "true";
   ctx.focus = false;
@@ -64,6 +64,7 @@ function item(json, parent, ctx) {
      div.id = ctx.id;
      div.style.position = "absolute";
      if(ctx.anchors.fill!==null) {
+        delete ctx.width; delete ctx.height; delete ctx.x; delete ctx.y;
         ctx.width = ctx.anchors.fill.width;
         ctx.height = ctx.anchors.fill.height;
         ctx.x = ctx.anchors.fill.x;
@@ -257,9 +258,9 @@ function text(json, parent, ctx)
     if(e["verticalAlignment"]!==undefined) _f(ctx, "verticalAlignment", e["verticalAlignment"]);     
   });
 
-  this.html = function(ctx, e) {
+  ctx.html = function(ctx, e) {
     ctx = ctx || this;
-    var div = this.base.html(ctx, e);
+    var div = ctx.base.html(ctx, e);
     div.innerHTML = '<div>' + ctx.text + '<div>';
     div.style.color = ctx.color;
     if(ctx.font.bold) div.style.fontWeight="bold";
@@ -307,15 +308,33 @@ function text(json, parent, ctx)
         div.style.verticalAlign = "text-bottom";
         break;
       case ctx.Text.AlignVCenter:
-         console.log(window.getComputedStyle(div.childNodes[0]).getPropertyValue("height"))
+         //console.log(window.getComputedStyle(div.childNodes[0]).getPropertyValue("height"))
          div.style.paddingTop = 0.5*ctx.height - 5;
          break;
     }
-
-
     return div;
   }
 }
+
+function mouse_area(json, parent, ctx) {
+  ctx = ctx || this;
+  ctx.base = new item(json, parent, this);
+  ctx.onClicked = function () {}
+  parent = parent;
+
+  json.map(function(e) {
+    if(e.onClicked) ctx.onClicked = new Function("ctx", e.onClicked);
+  });
+
+
+  ctx.html = function(ctx, e) {
+    ctx = ctx || this;
+    var div = ctx.base.html(ctx, e);
+    div.onclick = function() {ctx.onClicked(ctx)}
+    return div;
+  }
+}
+
 var global_id = 0;
 function load_qml(json, parent) {
   var p = [];
@@ -324,6 +343,7 @@ function load_qml(json, parent) {
     if(j.Rectangle) p.push(new rectangle(j.Rectangle, parent));
     if(j.Image) p.push(new image(j.Image, parent));
     if(j.Text) p.push(new text(j.Text, parent));
+    if(j.MouseArea) p.push(new mouse_area(j.MouseArea, parent));
   });
   return p;
 }
