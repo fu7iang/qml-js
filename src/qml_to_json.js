@@ -25,7 +25,8 @@ declarations "declarations" =
   /x:declaration
 
 declaration "declaration" =
-  l:var ident":" ident r:var ident "{" m:mix "}" {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'}
+  l:("on" x:(! "Changed" n:. {return n})* "Changed" {return x}) ident ":" ident r:expression comments {return '{"' + "event" + '":' + '{"' + l.join("") + '"' + ":" + r + "}"+ '}' }
+  /l:var ident":" ident r:var ident "{" m:mix "}" {return '{"' + l + '":{"' + r + '":[' + m + "]}" + '}'}
   /l:var ident":" ident r:expression comments {return '{"' + l + '"' + ":" + r + "}"}
 
 break "break" =
@@ -81,7 +82,7 @@ multiplicative "multiplicative" =
  /primary
 
 svar "svar" =
-  p:(a:alphanumeric "."? {return a})*  {return {args: p.slice(0, p.length-1).join("."), last:p[p.length-1], all: p.join(".")}}
+  p:(a:alphanumeric "."? {return a})*  {return {args:(p.length>1?".":"") + p.slice(0, p.length-1).join("."), last:p[p.length-1], all: p.join(".")}}
 
 
 primary "primary"
@@ -90,7 +91,7 @@ primary "primary"
   /string
   /integer
   /functioncall
-  / v:svar spaces "=" spaces p:primary {return "this." + v.args+".set" + v.last + "(ctx," + p + ")"}
+  / v:svar spaces "=" spaces p:primary {return "this" + v.args + ".set" + v.last + "(ctx," + p + ")"}
   / "(" additive:additive ")" { return "(" + additive + ")"; }
   / v:expvar {return v}
 

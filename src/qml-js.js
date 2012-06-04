@@ -7,21 +7,10 @@ Written by Daniël Heres 2012
 function _f(ctx, prop, expression) {
   delete ctx[prop]
   ctx.__defineGetter__(prop, new Function("return " + expression));
-  ctx["set" +prop] = function(from, val) {
-    var v = prop;
-    v[0] = v.charAt(0).toUpperCase();
-    if (ctx["on" + v + "Changed"] !== undefined) ctx["on" + v + "Changed"]();
-    if(ctx.subscribers.indexOf(from) === -1) ctx.subscribers.push(from);
-    ctx[prop] = val;
-    ctx.subscribers.map(function(s) {
-       //s();
-    });
-  }
 }
-
 function item(json, parent, ctx) {
   ctx.id = ""
-  ctx.x = 0;
+  _f(ctx, "x", 0);
   ctx.y = 0;
   ctx.z = 0;
   ctx.width = _f(ctx, "width", 0);
@@ -39,6 +28,21 @@ function item(json, parent, ctx) {
     fill:null,
     parent:ctx.parent
   }
+
+  ctx.to_html = {
+    x:function(div) {
+      div.style.left = ctx.x + "px";
+    },
+    y:function(div) {
+      div.style.top = ctx.y + "px";
+    },
+    width:function(div) {
+      div.style.width = ctx.width + "px";
+    },
+    height:function(div) {
+      div.style.height = ctx.height + "px";
+    }
+  }
   json.map(function(e) {
     if(e.id!==undefined) ctx.id = e.id;
     if(e.width!==undefined) _f(ctx, "width", e.width);
@@ -53,6 +57,27 @@ function item(json, parent, ctx) {
     if(e.rotation!==undefined) _f(ctx, "rotation", e.rotation);
     if(e.scale!==undefined) _f(ctx, "scale", e.scale);
     if(e["anchors.fill"]!==undefined) _f(ctx.anchors, "fill", e["anchors.fill"]);
+    if(e.event !==undefined) {
+        for (var prop in e.event) {
+          var v = prop;
+          var c = v.charAt(0).toLowerCase();
+          ctx["on" +c + "Changed"] = new Function(e.event[prop]);
+          ctx["set" + c + v.slice(1)] = function(from, val) {
+            delete ctx[c + v.slice(1)];
+            ctx[c + v.slice(1)] = val;
+            console.log(ctx[c + v.slice(1)]);
+            ctx["on" +c + "Changed"]();
+            ctx.to_html[c + v.slice(1)](document.getElementById(ctx.id));
+            if(ctx.subscribers.indexOf(from) === -1) ctx.subscribers.push(from);
+            ctx[prop] = val;
+            ctx.subscribers.map(function(s) {
+        //s();
+            });
+        }
+       
+    }
+  }
+    
   });
   //create new id if it doesn't exist
   if(ctx.id==="") ctx.id = global_id++ + "qmljs";
@@ -99,7 +124,7 @@ function item(json, parent, ctx) {
 
 function rectangle(json, parent, ctx) {
   ctx = ctx || this;
-  ctx.base = new item(json, parent, this);
+  ctx.base = new item(json, parent, ctx);
   ctx.color = "transparent";
   ctx.border = {
     color:"white",
@@ -157,7 +182,7 @@ function rectangle(json, parent, ctx) {
 }
 function image(json, parent, ctx) {
   ctx = ctx || this;
-  ctx.base = new item(json, parent, this);
+  ctx.base = new item(json, parent, ctx);
   ctx.source="";
   ctx.mirror = false;
   ctx.Image = {PreserveAspectFit:0, PreserveAspectCrop:1, parent:ctx.parent,}

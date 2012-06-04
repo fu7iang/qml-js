@@ -7,6 +7,7 @@
 //just a red box!
 Rectangle {
   width:400;
+  x:0
   gradient: Gradient{
     GradientStop { position:0.0; color:"red"}
     GradientStop { position:1.0; color:"darkred"}
@@ -16,6 +17,13 @@ Rectangle {
   border.color:"blue"
   border.width:5
   radius:20;
+  onHeightChanged: {alert("height changed")}
+  MouseArea {
+   id:mouse
+   anchors.fill:parent
+   onClicked:{parent.height=parent.width}
+   z:100
+  }
   Rectangle {
     id: redround
     z:4
@@ -24,12 +32,6 @@ Rectangle {
     gradient: Gradient{
      GradientStop { position:0.0; color:"darkred"}
       GradientStop { position:1.0; color:"red"}
-   }
-   MouseArea {
-     id:mouse
-     anchors.fill:parent
-     onClicked:{alert("click!")}
-     z:100
    }
 
    border.color:"white"
